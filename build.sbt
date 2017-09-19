@@ -4,6 +4,7 @@ lazy val root = (project in file(".")).settings(
   npmDependencies in Compile += "milligram-less" -> "1.3.0",
   sourceDirectories in (Compile, TwirlKeys.compileTemplates) += (baseDirectory.value.getParentFile / "src" / "main" / "twirl"),
   resourceDirectories in (Assets, LessKeys.less) += crossTarget.value / "scalajs-bundler" / "main",
+
   webpackConfigFile := Some(baseDirectory.value / "webpack.config.js"),
   scalaJSUseMainModuleInitializer := true,
 
@@ -13,3 +14,4 @@ lazy val root = (project in file(".")).settings(
     "org.scala-js" %%% "scalajs-dom" % "0.9.1"
   )
 ).enablePlugins(ScalaJSBundlerPlugin, SbtTwirl, SbtWeb)
+// .disablePlugins(SbtLess)
