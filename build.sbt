@@ -1,4 +1,4 @@
-resolvers += "ipfs" at "https://ipfs.io/ipfs/QmZwTcMFFZ1SrM6R6pA5SKGd3Pfr8w6Mey5dG88UBLZA48"
+resolvers += "ipfs" at "https://ipfs.io/ipfs/QmZaMLnS6hk4UhnXfExMBnJgudYe96MihERohaUzK8fw7z"
 
 lazy val root = (project in file(".")).settings(
   npmDependencies in Compile += "milligram-less" -> "1.3.0",
@@ -10,8 +10,8 @@ lazy val root = (project in file(".")).settings(
 
   scalaVersion := "2.12.1",
   libraryDependencies ++= Seq(
-    "eu.devtty" %%% "api-ipfs-node" % "0.2.4-SNAPSHOT",
+    "eu.devtty" %%% "js-ipfs-node" % "0.3.1-SNAPSHOT",
     "org.scala-js" %%% "scalajs-dom" % "0.9.1"
   )
 ).enablePlugins(ScalaJSBundlerPlugin, SbtTwirl, SbtWeb)
-// .disablePlugins(SbtLess)
+ .disablePlugins(SbtLess) //do this before first sbt run

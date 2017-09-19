@@ -1,6 +1,6 @@
 package igis
 
-import igis.mvc.{Request, Router}
+import igis.mvc.{Node, Request, Router}
 import igis.tree.TreeController
 
 import scala.scalajs.js.JSApp
@@ -8,8 +8,10 @@ import org.scalajs.dom.document
 
 object App extends JSApp {
   var router = new Router()
+  implicit val node: Node = new Node()
 
   def main(): Unit = {
+    new Node().init()
     println(html.index())
 
     router.register(new TreeController(), "/tree")
