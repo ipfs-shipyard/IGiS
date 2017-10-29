@@ -8,18 +8,7 @@ import scala.util.{Failure, Success}
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class Node {
-  val ipfs = new JsIpfs(js.Dynamic.literal(
-    EXPERIMENTAL = js.Dynamic.literal(
-      pubsub = true
-    ),
-    config = js.Dynamic.literal(
-      Addresses = js.Dynamic.literal(
-        Swarm = js.Array(
-          "/libp2p-webrtc-star/dns4/star-signal.cloud.ipfs.team/wss"
-        )
-      )
-    )
-  ))
+  val ipfs = new JsIpfs()
 
   def init(): Unit = {
     ipfs.on("ready").map { _: Any =>

@@ -12,7 +12,6 @@ object App extends JSApp {
 
   def main(): Unit = {
     new Node().init()
-    println(html.index())
 
     router.register(new TreeController(), "/tree")
 
