@@ -36,7 +36,7 @@ class Router extends Controller {
     } else {
       children.get(parts.head) match {
         case None => "404.2"
-        case Some(cont) => cont(new Request(req)(req.node))
+        case Some(cont) => cont(new Request(req, req.node))
       }
     }
   }
