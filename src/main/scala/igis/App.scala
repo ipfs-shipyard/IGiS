@@ -1,7 +1,7 @@
 package igis
 
+import igis.app.controllers.TreeController
 import igis.mvc.{Node, Request, Router}
-import igis.tree.TreeController
 
 import scala.scalajs.js.JSApp
 import org.scalajs.dom.document
@@ -19,7 +19,14 @@ object App extends JSApp {
         router.register(new TreeController(), "/tree")
 
         //TODO: overengineer me
-        document.getElementById("body").innerHTML = router(new Request("/tree", node))
+        router(new Request("/tree", node)).andThen {
+          case Success(result) =>
+            document.getElementById("body").innerHTML = result
+          case Failure(f) =>
+            f.printStackTrace()
+            document.getElementById("body").innerHTML = "error 212"
+        }
+
       case Failure(_) =>
         println("nope; error 254865215484; find me and fix me")
     }

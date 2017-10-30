@@ -1,5 +1,7 @@
 package igis.mvc
 
+import scala.concurrent.Future
+
 class Router extends Controller {
   var children: Map[String, Router] = Map[String, Router]()
   var default: Option[Controller] = Option.empty
@@ -26,16 +28,16 @@ class Router extends Controller {
     }
   }
 
-  def apply(req: Request): String = {
+  def apply(req: Request): Future[String] = {
     val parts = req.remPath.replaceFirst("^/*", "").split("/")
     if(parts.isEmpty || req.remPath == "") {
       default match {
-        case None => "404.1"
+        case None => Future.successful("404.1")
         case Some(d) => d(req)
       }
     } else {
       children.get(parts.head) match {
-        case None => "404.2"
+        case None => Future.successful("404.2")
         case Some(cont) => cont(new Request(req, req.node))
       }
     }

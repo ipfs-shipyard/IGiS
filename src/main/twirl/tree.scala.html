@@ -1,3 +1,9 @@
-@()
+@(files: Array[models.TreeFile])
 
-tree:
+<div>
+    @for(f <- files) {
+        <div>
+            <a href="#/tree/@(f.link.toBaseEncodedString())">@(f.name)</a>
+        </div>
+    }
+</div>
