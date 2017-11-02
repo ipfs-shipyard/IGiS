@@ -14,4 +14,4 @@ lazy val root = (project in file(".")).settings(
     "org.scala-js" %%% "scalajs-dom" % "0.9.1"
   )
 ).enablePlugins(ScalaJSBundlerPlugin, SbtTwirl, SbtWeb)
- .disablePlugins(SbtLess) //do this before first sbt run
+// .disablePlugins(SbtLess) //do this before first sbt run

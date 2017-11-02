@@ -11,10 +11,13 @@ import scala.concurrent.Future
 import scala.scalajs.js
 
 class TreeController extends Controller {
-  val demoTree = "z8mWaHgb8Wcq6n72s11Q9bbmDvFS1WuGr"
+  def tree(path: String, node: Node): Future[Array[TreeFile]] = {
+    val parts = path.split("/")
+    val root = parts.head
 
-  def tree(root: String, node: Node): Future[Array[TreeFile]] = {
-    App.node.ipfs.dag.get(root).map {o =>
+    val ipldPath = parts.drop(1).map(p => s"$p/hash").mkString("/")
+
+    App.node.ipfs.dag.get(s"$root/tree/$ipldPath").map {o =>
       val t = o.value.asInstanceOf[js.Object]
       val files = js.Object.keys(t).toArray
 
@@ -29,9 +32,8 @@ class TreeController extends Controller {
   }
 
   def apply(req: Request): Future[String] = {
-    tree(demoTree, req.node).map { files =>
-
-      html.tree(files).toString()
+    tree(req.remPath, req.node).map { files =>
+      html.tree(files, req.remPath).toString()
     }
   }
 }

@@ -37,7 +37,11 @@ class Router extends Controller {
       }
     } else {
       children.get(parts.head) match {
-        case None => Future.successful("404.2")
+        case None =>
+          default match {
+            case None => Future.successful("404.2")
+            case Some(d) => d(req)
+          }
         case Some(cont) => cont(new Request(req, req.node))
       }
     }

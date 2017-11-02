@@ -11,7 +11,6 @@ import scala.scalajs.js
 
 class Node {
   val ipfs = new JsIpfs()
-  window.console.asInstanceOf[js.Dynamic].trace()
 
   def init(): Future[Unit] = {
     val p = Promise[Unit]()
@@ -22,7 +21,7 @@ class Node {
       js.Dynamic.global.ipfs = ipfs.asInstanceOf[js.Any]
 
       //TODO: remove
-      ipfs.swarm.connect(new Multiaddr("/ip4/172.16.1.26/tcp/4002/ws/ipfs/QmebbuuHVTfyieTh9AeKiT9dmrXv5fWmqXQnLQjA9MuyJM"))
+      ipfs.swarm.connect(new Multiaddr("/dns4/ipfs.devtty.eu/wss/ipfs/QmNMVHJTSZHTWMWBbmBrQgkA1hZPWYuVJx2DpSGESWW6Kn"))
     }.andThen {
       case Success(_) =>
         println("Online!")
