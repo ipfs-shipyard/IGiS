@@ -1,15 +1,25 @@
-@(content: Html)
+@(title: Html)(content: Html)
 
-<div class="container">
-    <div class="row">
-        <div class="column">
-            <a href="#/tree/z8mWaJ1dMvB5yUCgZieAT215HhXGcRF86">Demo tree</a>
+<div class="wrapper">
+    <nav class="navigation">
+        <div class="container">
+            <span class="navigation-title">
+                <h1 class="title">IGiS</h1>
+            </span>
+            <ul class="navigation-list float-right">
+                <li class="navigation-item">
+                    <a class="navigation-link" href="#/tree/z8mWaJ1dMvB5yUCgZieAT215HhXGcRF86">Demo tree</a>
+                </li>
+            </ul>
         </div>
-    </div>
-    <div class="row">
-        <div class="column">
-            @content
+    </nav>
+    <header class="header">
+        <div class="container">
+            @title
         </div>
+    </header>
+    <div class="container">
+        @content
     </div>
 
 </div>

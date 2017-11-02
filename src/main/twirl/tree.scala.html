@@ -1,6 +1,6 @@
 @(files: Array[models.TreeFile], root: String)
 
-@main {
+@main{@title(root)} {
     <div class="container">
         @for(f <- files) {
             <div class="row">
