@@ -1,6 +1,6 @@
 package igis
 
-import igis.app.controllers.TreeController
+import igis.app.controllers.{BlobController, TreeController}
 import igis.mvc.{Node, Request, Router}
 import org.scalajs.dom.raw.HashChangeEvent
 
@@ -41,6 +41,7 @@ object App extends JSApp {
     node.init().andThen{
       case Success(_) =>
         router.register(new TreeController(), "/tree")
+        router.register(new BlobController(), "/blob")
         updateLocation()
 
       case Failure(f) =>
