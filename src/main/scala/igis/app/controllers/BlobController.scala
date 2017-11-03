@@ -5,7 +5,7 @@ import binding.smartbuffer.SmartBuffer
 import igis.App
 import igis.mvc.{Controller, Node, Request}
 import io.scalajs.nodejs.buffer.Buffer
-import models.TreeFile
+import models.TitlePart
 import play.twirl.api.Html
 
 import scala.concurrent.Future
@@ -31,11 +31,19 @@ class BlobController extends Controller {
     }
   }
 
+  def titlePath(path: String): Seq[TitlePart] = {
+    val parts = path.split("/")
+    val partialUrls = parts.foldLeft(Seq[String](""))((prev, cur) => prev ++ Seq(s"${prev.last}/$cur")).drop(1)
+    val urls = partialUrls.dropRight(1).map(url => s"#/tree$url") ++ Seq(s"#/blob${partialUrls.last}")
+
+    parts.zip(urls).map{case (part, url) => TitlePart(part, url)}
+  }
+
   def apply(req: Request): Future[String] = {
     blob(req.remPath, req.node).map { data =>
       val highlighted = HighlightJS.highlightAuto(data)
 
-      html.blob(Html(highlighted.value), req.remPath).toString()
+      html.blob(Html(highlighted.value), titlePath(req.remPath)).toString()
     }
   }
 }

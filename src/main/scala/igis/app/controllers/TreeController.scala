@@ -4,7 +4,8 @@ import eu.devtty.cid.CID
 import igis.App
 import igis.ipld.GitFile
 import igis.mvc.{Controller, Node, Request}
-import models.{Directory, File, FileType, TreeFile}
+import igis.util.Debug
+import models._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -45,9 +46,17 @@ class TreeController extends Controller {
     }
   }
 
+  def titlePath(path: String): Seq[TitlePart] = {
+    val parts = path.split("/")
+    val urls = parts.foldLeft(Seq[String](""))((prev, cur) => prev ++ Seq(s"${prev.last}/$cur")).drop(1)
+
+
+    parts.zip(urls).map{case (part, url) => TitlePart(part, s"#/tree$url")}
+  }
+
   def apply(req: Request): Future[String] = {
     tree(req.remPath, req.node).map { files =>
-      html.tree(files, req.remPath).toString()
+      html.tree(files, titlePath(req.remPath), req.remPath).toString()
     }
   }
 }

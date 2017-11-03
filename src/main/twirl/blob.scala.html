@@ -1,6 +1,6 @@
-@(code: Html, file: String)
+@(code: Html, file: Seq[models.TitlePart])
 
-@main{@title(file)} {
+@main{@pathTitle(file)} {
     <div class="container">
         <pre><code>@code</code></pre>
     </div>
