@@ -1,10 +1,12 @@
 package igis.app.controllers
 
+import binding.highlightjs.HighlightJS
 import binding.smartbuffer.SmartBuffer
 import igis.App
 import igis.mvc.{Controller, Node, Request}
 import io.scalajs.nodejs.buffer.Buffer
 import models.TreeFile
+import play.twirl.api.Html
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -31,7 +33,9 @@ class BlobController extends Controller {
 
   def apply(req: Request): Future[String] = {
     blob(req.remPath, req.node).map { data =>
-      html.blob(data, req.remPath).toString()
+      val highlighted = HighlightJS.highlightAuto(data)
+
+      html.blob(Html(highlighted.value), req.remPath).toString()
     }
   }
 }

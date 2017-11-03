@@ -1,5 +1,6 @@
 package igis
 
+import binding.highlightjs.HighlightJS
 import igis.app.controllers.{BlobController, TreeController}
 import igis.mvc.{Node, Request, Router}
 import org.scalajs.dom.raw.HashChangeEvent
@@ -34,6 +35,11 @@ object App extends JSApp {
   }
 
   def main(): Unit = {
+    while(document.body.firstChild != null) {
+      document.body.removeChild(document.body.firstChild)
+    }
+    document.body.appendChild(document.createTextNode("Startup..."))
+
     window.onhashchange = {(_: HashChangeEvent) =>
       updateLocation()
     }
