@@ -28,18 +28,18 @@ class Router extends Controller {
     }
   }
 
-  def apply(req: Request): Future[String] = {
+  def apply(req: Request): Future[Response] = {
     val parts = req.remPath.replaceFirst("^/*", "").split("/")
     if(parts.isEmpty || req.remPath == "") {
       default match {
-        case None => Future.successful("404.1")
+        case None => Future.successful(Response.withData("404.1"))
         case Some(d) => d(req)
       }
     } else {
       children.get(parts.head) match {
         case None =>
           default match {
-            case None => Future.successful("404.2")
+            case None => Future.successful(Response.withData("404.2"))
             case Some(d) => d(req)
           }
         case Some(cont) => cont(new Request(req, req.node))

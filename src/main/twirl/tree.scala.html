@@ -1,19 +1,7 @@
 @(files: Array[models.TreeFile], title: Seq[models.TitlePart], root: String)
 
-@main{@pathTitle(title)} {
+@main{@component.html.pathTitle(title)} {
     <div class="container">
-        @for(f <- files) {
-            <div class="row">
-                <div class="column-10">
-                    @f.fileType match {
-                        case models.File => { F }
-                        case models.Directory => { D }
-                    }
-                </div>
-                <div class="column">
-                    <a href="#/@f.fileType.strType/@root/@(f.name)">@(f.name)</a>
-                </div>
-            </div>
-        }
+        @component.html.tree(files, root)
     </div>
 }

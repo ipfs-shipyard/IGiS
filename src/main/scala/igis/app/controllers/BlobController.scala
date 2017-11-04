@@ -3,7 +3,7 @@ package igis.app.controllers
 import binding.highlightjs.HighlightJS
 import binding.smartbuffer.SmartBuffer
 import igis.App
-import igis.mvc.{Controller, Node, Request}
+import igis.mvc.{Controller, Node, Request, Response}
 import io.scalajs.nodejs.buffer.Buffer
 import models.TitlePart
 import play.twirl.api.Html
@@ -39,11 +39,11 @@ class BlobController extends Controller {
     parts.zip(urls).map{case (part, url) => TitlePart(part, url)}
   }
 
-  def apply(req: Request): Future[String] = {
+  def apply(req: Request): Future[Response] = {
     blob(req.remPath, req.node).map { data =>
       val highlighted = HighlightJS.highlightAuto(data)
 
-      html.blob(Html(highlighted.value), titlePath(req.remPath)).toString()
+      Response.withData(html.blob(Html(highlighted.value), titlePath(req.remPath)).toString())
     }
   }
 }

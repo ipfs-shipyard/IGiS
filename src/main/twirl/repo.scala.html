@@ -1,0 +1,17 @@
+@(files: Array[models.TreeFile], title: Seq[models.TitlePart], root: String)
+
+@main{@component.html.pathTitle(title)} {
+    <div class="container">
+        <div class="row">
+            <div>
+                <a class="button" href="#/repo/commits/@root">Commits</a>
+            </div>
+            <div class="float-right">
+                <a class="button-outline popdown" href="#/repo/clone/@root">Clone</a>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        @component.html.tree(files, root)
+    </div>
+}

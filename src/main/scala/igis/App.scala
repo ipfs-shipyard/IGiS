@@ -1,8 +1,8 @@
 package igis
 
 import binding.highlightjs.HighlightJS
-import igis.app.controllers.{BlobController, TreeController}
-import igis.mvc.{Node, Request, Router}
+import igis.app.controllers.{BlobController, RepoController, TreeController}
+import igis.mvc.{Node, Request, Response, Router}
 import org.scalajs.dom.raw.HashChangeEvent
 
 import scala.scalajs.js.JSApp
@@ -26,8 +26,11 @@ object App extends JSApp {
     }
 
     router(new Request(location, node)).andThen {
-      case Success(result) =>
+      case Success(Response.DataResponse(result)) =>
         document.getElementById("body").innerHTML = result
+      case Success(Response.RedirectResponse(result)) =>
+        window.location.hash = result
+        updateLocation()
       case Failure(f) =>
         f.printStackTrace()
         document.getElementById("body").innerHTML = "error 212"
@@ -46,6 +49,7 @@ object App extends JSApp {
 
     node.init().andThen{
       case Success(_) =>
+        router.register(new RepoController(), "/repo")
         router.register(new TreeController(), "/tree")
         router.register(new BlobController(), "/blob")
         updateLocation()

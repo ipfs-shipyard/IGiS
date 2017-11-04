@@ -1,12 +1,12 @@
 package igis.app.controllers
 
 import igis.mvc.{Controller, Request, Response}
-import models._
+import models.{TitlePart, Tree}
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
-class TreeController extends Controller {
+class RepoController extends Controller {
   def titlePath(path: String): Seq[TitlePart] = {
     val parts = path.split("/")
     val urls = parts.foldLeft(Seq[String](""))((prev, cur) => prev ++ Seq(s"${prev.last}/$cur")).drop(1)
@@ -16,12 +16,8 @@ class TreeController extends Controller {
   }
 
   def apply(req: Request): Future[Response] = {
-    if(!req.remPath.contains("/")) {
-      return Future.successful(Response.redirect(s"/repo/${req.remPath}"))
-    }
-
     Tree.files(req.remPath, req.node).map { files =>
-      Response.withData(html.tree(files, titlePath(req.remPath), req.remPath).toString())
+      Response.withData(html.repo(files, titlePath(req.remPath), req.remPath).toString())
     }
   }
 }
