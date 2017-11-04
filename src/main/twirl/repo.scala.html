@@ -3,12 +3,21 @@
 @main{@component.html.pathTitle(title)} {
     <div class="container">
         <div class="row">
-            <div>
+            <div class="column">
                 <a class="button" href="#/repo/commits/@root">Commits</a>
             </div>
-            <div class="float-right">
-                <a class="button-outline popdown" href="#/repo/clone/@root">Clone</a>
+            <div class="column">
+                <div class="popdown-parent clearfix">
+                    <a class="button button-outline popdown float-right">Clone</a>
+                </div>
+                <div class="popdown-root hidden">
+                    <div>
+                        <h5>Clone with IPLD</h5>
+                        <input type="text" readonly="readonly" onclick="this.select()" value="ipld::d8a8fa10fa9449f0bb960d31959b66d02c6cbd12">
+                    </div>
+                </div>
             </div>
+
         </div>
     </div>
     <div class="container">
