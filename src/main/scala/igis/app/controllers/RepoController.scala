@@ -1,5 +1,6 @@
 package igis.app.controllers
 
+import eu.devtty.cid.CID
 import igis.mvc.{Controller, Request, Response}
 import models.{TitlePart, Tree}
 
@@ -18,7 +19,10 @@ class RepoController extends Controller {
 
   def apply(req: Request): Future[Response] = {
     Tree.files(req.remPath, req.node).map { files =>
-      Response.withData(html.repo(files, titlePath(req.remPath), req.remPath).toString())
+      val cid = new CID(req.remPath.split("/").head)
+      val hash = cid.buffer.slice(cid.prefix.length).toHexString
+
+      Response.withData(html.repo(files, titlePath(req.remPath), req.remPath, hash).toString())
     }
   }
 }

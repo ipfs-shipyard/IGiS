@@ -1,4 +1,4 @@
-@(files: Array[models.TreeFile], title: Seq[models.TitlePart], root: String)
+@(files: Array[models.TreeFile], title: Seq[models.TitlePart], root: String, rootHash: String)
 
 @main{@component.html.pathTitle(title)} {
     <div class="container">
@@ -13,7 +13,7 @@
                 <div class="popdown-root hidden">
                     <div>
                         <h5>Clone with IPLD</h5>
-                        <input type="text" readonly="readonly" onclick="this.select()" value="ipld::d8a8fa10fa9449f0bb960d31959b66d02c6cbd12">
+                        <input type="text" readonly="readonly" onclick="this.select()" value="ipld::@rootHash">
                     </div>
                 </div>
             </div>
