@@ -15,6 +15,7 @@ class RepoController extends Controller {
     parts.zip(urls).map{case (part, url) => TitlePart(part, s"#/tree$url")}
   }
 
+
   def apply(req: Request): Future[Response] = {
     Tree.files(req.remPath, req.node).map { files =>
       Response.withData(html.repo(files, titlePath(req.remPath), req.remPath).toString())

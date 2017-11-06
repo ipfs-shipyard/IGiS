@@ -1,0 +1,22 @@
+.tree-root {
+  > div {
+    border: 1px solid @color-quaternary;
+    padding: 0.7rem;
+  }
+
+  > div:not(:first-child) {
+    border-top: 0;
+  }
+
+  > div:first-child {
+    border-radius: 3px 3px 0 0;
+  }
+
+  > div:not(:first-child):hover {
+    background: @color-tertiary;
+  }
+}
+
+.tree-head {
+  background: @color-tertiary;
+}

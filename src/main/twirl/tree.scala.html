@@ -1,7 +1,7 @@
 @(files: Array[models.TreeFile], title: Seq[models.TitlePart], root: String)
 
 @main{@component.html.pathTitle(title)} {
-    <div class="container">
+    <div class="container tree-root">
         @component.html.tree(files, root)
     </div>
 }
