@@ -1,4 +1,4 @@
-@(files: Array[models.TreeFile], title: Seq[models.TitlePart], root: String, rootHash: String)
+@(files: Array[models.TreeFile], title: Seq[models.TitlePart], root: String, rootHash: String, msgLine: String, date: String)
 
 @main{@component.html.pathTitle(title)} {
     <div class="container">
@@ -22,7 +22,10 @@
     </div>
     <div class="container tree-root">
         <div class="row tree-head">
-            <div class="column">aoe</div>
+            <div class="column">@msgLine</div>
+            <div class="column">
+                <span class="float-right">@date</span>
+            </div>
         </div>
         @component.html.tree(files, root)
     </div>

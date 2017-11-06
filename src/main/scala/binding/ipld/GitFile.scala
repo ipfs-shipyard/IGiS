@@ -1,4 +1,4 @@
-package igis.ipld
+package binding.ipld
 
 import models.FileType
 

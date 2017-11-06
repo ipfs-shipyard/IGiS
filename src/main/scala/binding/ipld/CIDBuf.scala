@@ -1,4 +1,4 @@
-package igis.ipld
+package binding.ipld
 
 import eu.devtty.cid.CID
 import io.scalajs.nodejs.buffer.Buffer

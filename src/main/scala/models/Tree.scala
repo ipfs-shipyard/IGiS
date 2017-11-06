@@ -2,7 +2,7 @@ package models
 
 import eu.devtty.cid.CID
 import igis.App
-import igis.ipld.GitFile
+import binding.ipld.GitFile
 import igis.mvc.Node
 
 import scala.concurrent.Future
