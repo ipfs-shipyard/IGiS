@@ -27,7 +27,6 @@ class RepoController extends Controller {
     Tree.files(req.remPath, req.node).zip(commitInfo(req.remPath, req.node)).map { case (files, info) =>
       val cid = new CID(req.remPath.split("/").head)
       val hash = cid.buffer.slice(cid.prefix.length).toHexString
-      Debug.jsPrint(info)
       val msg = info.message.lines.next()
       val date = TimeUtil.gitTimeToDate(info.author.date).toDateString()
 

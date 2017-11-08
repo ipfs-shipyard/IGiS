@@ -1,8 +1,7 @@
 package igis
 
-import igis.app.controllers.{BlobController, RepoController, TreeController}
+import igis.app.controllers.{BlobController, CommitsController, RepoController, TreeController}
 import igis.mvc.{Node, Request, Response, Router}
-import igis.util.Debug
 import org.scalajs.dom.raw.{HTMLElement, HashChangeEvent, MouseEvent}
 
 import scala.scalajs.js.JSApp
@@ -29,6 +28,9 @@ object App extends JSApp {
       case Success(Response.DataResponse(result)) =>
         document.getElementById("body").innerHTML = result
         initPopdown()
+      case Success(Response.ElementResponse(element)) =>
+        document.getElementById("body").innerHTML = "" //TODO: make it the proper way
+        document.getElementById("body").appendChild(element)
       case Success(Response.RedirectResponse(result)) =>
         window.location.hash = result
         updateLocation()
@@ -73,6 +75,7 @@ object App extends JSApp {
         router.register(new RepoController(), "/repo")
         router.register(new TreeController(), "/tree")
         router.register(new BlobController(), "/blob")
+        router.register(new CommitsController(), "/repo/commits")
         updateLocation()
 
       case Failure(f) =>
