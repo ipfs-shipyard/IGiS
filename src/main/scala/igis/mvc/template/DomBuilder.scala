@@ -32,7 +32,7 @@ class DomBuilder(root: Element) {
   private def getTarget(className: String) = {
     val elems = root.getElementsByClassName(className)
     if(elems.length != 1) {
-      throw new Exception("Invalid target count (!= 1)")
+      throw new Exception(s"Invalid target count (!= 1) for target $className")
     }
     elems(0).asInstanceOf[Element]
   }

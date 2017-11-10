@@ -7,6 +7,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.Success
 import igis.util.HtmlDom._
+import igis.util.TimeUtil
 
 class CommitsController extends Controller {
   lazy val template = html.commits().template
@@ -27,7 +28,9 @@ class CommitsController extends Controller {
     fetchCommits(req.remPath, 10, req.node).andThen{
       case Success(commits) =>
         builder.setMultiple[GitCommit]("commits-root", commits, { case(b, commit) =>
-          b.set("commit-message", commit.message)
+          b.set("commit-message", commit.message.lines.next())
+          b.set("commit-author", commit.author.name)
+          b.set("commit-date", TimeUtil.gitTimeToDate(commit.author.date).toDateString())
         })
     }
 
