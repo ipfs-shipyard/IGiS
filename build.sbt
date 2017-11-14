@@ -4,6 +4,7 @@ lazy val root = (project in file(".")).settings(
   npmDependencies in Compile += "milligram-less" -> "1.3.0",
   npmDependencies in Compile += "smart-buffer" -> "3.0.3",
   npmDependencies in Compile += "highlight.js" -> "9.12.0",
+  npmDependencies in Compile += "showdown" -> "1.8.2",
   sourceDirectories in (Compile, TwirlKeys.compileTemplates) += (baseDirectory.value.getParentFile / "src" / "main" / "twirl"),
   resourceDirectories in (Assets, LessKeys.less) += crossTarget.value / "scalajs-bundler" / "main",
 

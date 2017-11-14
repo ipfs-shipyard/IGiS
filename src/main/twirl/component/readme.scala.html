@@ -1,0 +1,4 @@
+@(text: String)
+
+@*TODO: Ensure no XSS, fix # links*@
+@Html(new binding.showdown.Showdown().makeHtml(text))

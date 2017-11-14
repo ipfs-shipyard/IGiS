@@ -11,13 +11,9 @@ import play.twirl.api.Html
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class BlobController extends Controller {
-  def blob(path: String, node: Node): Future[String] ={
-    val parts = path.split("/")
-    val root = parts.head
-
-    val ipldPath = parts.drop(1).map(p => s"$p/hash").mkString("/")
-    App.node.ipfs.dag.get(s"$root/tree/$ipldPath").map {o =>
+object BlobController {
+  def rawBlob(path: String, node: Node): Future[String] = {
+    App.node.ipfs.dag.get(path).map {o =>
       val buf = o.value.asInstanceOf[Buffer]
 
       val sbuf = SmartBuffer.fromBuffer(buf)
@@ -29,6 +25,16 @@ class BlobController extends Controller {
       //Todo - ret size
       sbuf.readString()
     }
+  }
+}
+
+class BlobController extends Controller {
+  def blob(path: String, node: Node): Future[String] = {
+    val parts = path.split("/")
+    val root = parts.head
+
+    val ipldPath = parts.drop(1).map(p => s"$p/hash").mkString("/")
+    BlobController.rawBlob(s"$root/tree/$ipldPath", node)
   }
 
   def titlePath(path: String): Seq[TitlePart] = {
