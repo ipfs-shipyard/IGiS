@@ -1,7 +1,7 @@
 package igis.mvc.template
 
 import org.scalajs.dom
-import org.scalajs.dom.raw.{Element, Node}
+import org.scalajs.dom.raw.{Element, HTMLElement, Node}
 
 class DomBuilder(root: Element) {
   def set(className: String, value: Any): Unit = value match {
@@ -27,6 +27,10 @@ class DomBuilder(root: Element) {
     }.foreach(target.appendChild)
   }
 
+  def modElement(className: String, cb: (HTMLElement)=>Unit): Unit = {
+    cb(getTarget(className))
+  }
+
   def element: Element = root
 
   private def getTarget(className: String) = {
@@ -34,6 +38,6 @@ class DomBuilder(root: Element) {
     if(elems.length != 1) {
       throw new Exception(s"Invalid target count (!= 1) for target $className")
     }
-    elems(0).asInstanceOf[Element]
+    elems(0).asInstanceOf[HTMLElement]
   }
 }

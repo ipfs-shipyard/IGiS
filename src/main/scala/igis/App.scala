@@ -1,6 +1,6 @@
 package igis
 
-import igis.app.controllers.{BlobController, CommitsController, RepoController, TreeController}
+import igis.app.controllers._
 import igis.mvc.{Node, Request, Response, Router}
 import org.scalajs.dom.raw.{HTMLElement, HashChangeEvent, MouseEvent}
 
@@ -76,6 +76,7 @@ object App extends JSApp {
         router.register(new TreeController(), "/tree")
         router.register(new BlobController(), "/blob")
         router.register(new CommitsController(), "/repo/commits")
+        router.register(new CommitController(), "/commit")
         updateLocation()
 
       case Failure(f) =>
