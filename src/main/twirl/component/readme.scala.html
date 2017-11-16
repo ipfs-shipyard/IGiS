@@ -1,4 +1,11 @@
 @(text: String)
 
 @*TODO: Ensure no XSS, fix # links*@
-@Html(new binding.showdown.Showdown().makeHtml(text))
+<div class="container repo-readme-root">
+    <div class="row">README</div>
+    <div class="row">
+        <div class="container">
+            @Html(new binding.showdown.Showdown().makeHtml(text))
+        </div>
+    </div>
+</div>
