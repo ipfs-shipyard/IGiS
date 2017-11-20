@@ -3,11 +3,15 @@
 @main{ Commit } {
     <div class="container">
         <div class="row">
-            <div class="container">
-                <span>[Message]</span>
+            <div class="container commit-head">
+                <span class="commit-message"></span>
             </div>
         </div>
         <div class="row">
-            <div class="container commit-diff">Calculating changes</div>
+            <div class="container commit-diff">
+                <div class="commit-diff-element container">
+                    <pre><code class="commit-diff-code"></code></pre>
+                </div>
+            </div>
         </div>
     </div>}
