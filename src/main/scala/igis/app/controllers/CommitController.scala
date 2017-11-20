@@ -1,14 +1,12 @@
 package igis.app.controllers
 
-import binding.git.{GitCommit, GitTree}
-import binding.ipld.GitFile
-import eu.devtty.cid.CID
+import binding.diff.JsDiff
+import binding.git.GitCommit
 import igis.mvc.{Controller, Node, Request, Response}
 import igis.util.GitDiff
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.scalajs.js
 
 class CommitController extends Controller {
   def commitInfo(path: String, node: Node): Future[GitCommit] = {
@@ -26,6 +24,9 @@ class CommitController extends Controller {
         println(s"Del $name")
       case GitDiff.FileChange(name, base, head) =>
         println(s"Chg $name")
+        BlobController.rawBlob(base.hash.cid().toBaseEncodedString(), node).zip(BlobController.rawBlob(head.hash.cid().toBaseEncodedString(), node)).foreach{ case (b, h) =>
+          println(JsDiff.createPatch(name, b, h, "", ""))
+        }
     })
   }
 

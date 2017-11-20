@@ -4,6 +4,7 @@ import binding.highlightjs.HighlightJS
 import binding.smartbuffer.SmartBuffer
 import igis.App
 import igis.mvc.{Controller, Node, Request, Response}
+import igis.util.GitBlob
 import io.scalajs.nodejs.buffer.Buffer
 import models.TitlePart
 import play.twirl.api.Html
@@ -29,14 +30,6 @@ object BlobController {
 }
 
 class BlobController extends Controller {
-  def blob(path: String, node: Node): Future[String] = {
-    val parts = path.split("/")
-    val root = parts.head
-
-    val ipldPath = parts.drop(1).map(p => s"$p/hash").mkString("/")
-    BlobController.rawBlob(s"$root/tree/$ipldPath", node)
-  }
-
   def titlePath(path: String): Seq[TitlePart] = {
     val parts = path.split("/")
     val partialUrls = parts.foldLeft(Seq[String](""))((prev, cur) => prev ++ Seq(s"${prev.last}/$cur")).drop(1)
@@ -46,7 +39,7 @@ class BlobController extends Controller {
   }
 
   def apply(req: Request): Future[Response] = {
-    blob(req.remPath, req.node).map { data =>
+    GitBlob.fetch(req.remPath, req.node).map { data =>
       val highlighted = HighlightJS.highlightAuto(data)
 
       Response.withData(html.blob(Html(highlighted.value), titlePath(req.remPath)).toString())
