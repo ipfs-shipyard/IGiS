@@ -77,6 +77,7 @@ object App extends JSApp {
         router.register(new BlobController(), "/blob")
         router.register(new CommitsController(), "/repo/commits")
         router.register(new CommitController(), "/commit")
+        router.register(new IndexController(), "")
         updateLocation()
 
       case Failure(f) =>
