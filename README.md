@@ -17,10 +17,10 @@
 * SBT
 
 ### Before first build
-* `./setup.sh`
+* `make setup`
 
 ### Build
-* `./ipfs_build.sh`
+* `make build`
 
 ### Project Structure
 This is a client-side Scala.js single-page app loosely based on the MVC convention.

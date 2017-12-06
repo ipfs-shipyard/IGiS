@@ -65,3 +65,7 @@ fabric.properties
 ### Scala template
 *.class
 *.log
+
+# Project specific
+.sbt-launcher.jar
+.build
