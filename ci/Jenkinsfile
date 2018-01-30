@@ -1,0 +1,22 @@
+#!groovy
+
+stage('setup') {
+    node(label: 'linux') {
+        nodejs('9.2.0') {
+            ansiColor('xterm') {
+                checkout scm
+                sh 'make setup'
+            }
+        }
+    }
+}
+
+stage('build') {
+    node(label: 'linux') {
+        nodejs('9.2.0') {
+            ansiColor('xterm') {
+                sh 'make build'
+            }
+        }
+    }
+}
