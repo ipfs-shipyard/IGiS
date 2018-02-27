@@ -1,0 +1,10 @@
+.StatusBar {
+    display: grid;
+    grid-template-columns: 6em auto;
+    height: 100%;
+}
+
+.StatusBar div {
+    justify-self: center;
+    align-self: center;
+}
