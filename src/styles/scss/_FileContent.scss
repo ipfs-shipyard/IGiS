@@ -1,0 +1,17 @@
+.FileContent {
+	padding: 0.5em;
+
+    font-family: "SFMono-Regular",Consolas,"Liberation Mono",Menlo,Courier,monospace;
+    font-size: 0.8em;
+    word-wrap: normal;
+    white-space: pre;
+
+    .line-num {
+        text-align: right;
+        padding: 0 0.5em;
+        color: #999999;
+    }
+    .line-text {
+        padding: 0 0.5em;
+    }
+}

@@ -3743,10 +3743,10 @@ code, .code {
   width: 100%; }
 
 .w-third {
-  width: 33.3333333333%; }
+  width: 33.33333%; }
 
 .w-two-thirds {
-  width: 66.6666666667%; }
+  width: 66.66667%; }
 
 .w-auto {
   width: auto; }
@@ -3810,10 +3810,10 @@ code, .code {
     width: 100%; }
 
   .w-third-ns {
-    width: 33.3333333333%; }
+    width: 33.33333%; }
 
   .w-two-thirds-ns {
-    width: 66.6666666667%; }
+    width: 66.66667%; }
 
   .w-auto-ns {
     width: auto; } }
@@ -3876,10 +3876,10 @@ code, .code {
     width: 100%; }
 
   .w-third-m {
-    width: 33.3333333333%; }
+    width: 33.33333%; }
 
   .w-two-thirds-m {
-    width: 66.6666666667%; }
+    width: 66.66667%; }
 
   .w-auto-m {
     width: auto; } }
@@ -3942,10 +3942,10 @@ code, .code {
     width: 100%; }
 
   .w-third-l {
-    width: 33.3333333333%; }
+    width: 33.33333%; }
 
   .w-two-thirds-l {
-    width: 66.6666666667%; }
+    width: 66.66667%; }
 
   .w-auto-l {
     width: auto; } }
@@ -7969,6 +7969,19 @@ code, .code {
   display: grid;
   grid-template-rows: 50px auto; }
 
+.FileContent {
+  padding: 0.5em;
+  font-family: "SFMono-Regular",Consolas,"Liberation Mono",Menlo,Courier,monospace;
+  font-size: 0.8em;
+  word-wrap: normal;
+  white-space: pre; }
+  .FileContent .line-num {
+    text-align: right;
+    padding: 0 0.5em;
+    color: #999999; }
+  .FileContent .line-text {
+    padding: 0 0.5em; }
+
 .StatusBar {
   display: grid;
   grid-template-columns: 6em auto;
@@ -7977,6 +7990,18 @@ code, .code {
 .StatusBar div {
   justify-self: center;
   align-self: center; }
+
+.Tree {
+  padding: 0.5em; }
+  .Tree > .item {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    padding: 0.5em 2em; }
+  .Tree .dir {
+    background: url(/images/icons/folder.svg) left no-repeat; }
+  .Tree .file {
+    background: url(/images/icons/file-text.svg) left no-repeat; }
 
 .WithMenu {
   display: grid;
