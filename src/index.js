@@ -9,11 +9,11 @@ if(!window.ipfs) {
   //TODO: This more than likely requires something more
   window.ipfs = new Ipfs()
 }
-
-window.ipfs.swarm.connect("/dns4/ipfs.devtty.eu/wss/ipfs/QmVGX47BzePPqEzpkTwfUJogPZxHcifpSXsGdgyHjtk5t7")
-
-ReactDOM.render((
-  <BrowserRouter>
-    <App />
-  </BrowserRouter>
-), document.getElementById('root'));
+window.ipfs.on('ready', async () => {
+  await window.ipfs.swarm.connect("/dns4/ipfs.devtty.eu/wss/ipfs/QmVGX47BzePPqEzpkTwfUJogPZxHcifpSXsGdgyHjtk5t7")
+  ReactDOM.render((
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  ), document.getElementById('root'));
+})

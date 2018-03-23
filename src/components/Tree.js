@@ -1,39 +1,22 @@
 import React, { Component } from 'react';
+import TreeItem from './TreeItem'
 
 class Tree extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {};
-  }
-
-  componentDidMount() {
-    let parts = this.props.path.split('/')
-    let cid = parts[0]
-    parts.shift()
-
-    let self = this
-    window.ipfs.dag.get(`${cid}/tree/${parts.join('/')}`).then(files => {
-      self.setState({files: files})
-    })
-  }
-
   render() {
-    if(!this.state.files) {
+    if (!(this.props.files || []).length) {
       return <div>Loading</div>
     }
 
     return (
-      <div>
-        {this.renderFiles()}
+      <div className="Tree">
+        {this.renderFiles(this.props.files)}
       </div>
     )
   }
 
-  renderFiles() {
-    return Object.keys(this.state.files.value).map(file =>
-      <div>
-        > {file}
-      </div>
+  renderFiles(files) {
+    return files.map(file =>
+      <TreeItem key={file.name} value={file} />
     )
   }
 }

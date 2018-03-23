@@ -1,0 +1,16 @@
+.Tree {
+	padding: 0.5em;
+
+	> .item {
+	    text-decoration: none;
+	    color: inherit;
+	    display: block;
+    	padding: 0.5em 2em;
+	}
+    .dir {
+    	background: url(/images/icons/folder.svg) left no-repeat;
+    }
+    .file {
+    	background: url(/images/icons/file-text.svg) left no-repeat;
+    }
+}
