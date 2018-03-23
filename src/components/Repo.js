@@ -26,7 +26,7 @@ class Repo extends Component {
 
     const { match: { params } } = this.props
     const content = this.state.type === TYPE_FILE ? (
-      <FileContent file={this.state.data} />
+      <FileContent file={this.state.data} path={this.state.pathname} />
     ) : (
       <Tree files={this.state.data || []} />
     )

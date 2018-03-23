@@ -1,25 +1,36 @@
 import React, { Component } from 'react';
+import Highlight from 'react-highlight'
 
 class FileContent extends Component {
   render() {
     const file = this.props.file
     // TODO: Parse BLOB properly
-    const lines = file.toString().split('\n')
-    lines.shift()
+    const str = file.toString().replace(/^blob [0-9]+/, '')
+    let lines = str.toString().split('\n')
+    if (lines[lines.length - 1] === '') {
+      lines = lines.splice(0, lines.length - 1)
+    }
+    const ext = (this.props.path.match(/.*\.(.*)/) || [])[1]
     return (
-      <div className="FileContent">{this.renderLines(lines)}</div>
+      <div className="FileContent">{this.renderLines(lines, ext)}</div>
     )
   }
 
-  renderLines(lines) {
-    const lineRows = lines.map((line, i) => (
-      <tr key={i} className="line">
-        <td className="line-num">{i+1}</td>
-        <td className="line-text">{line}</td>
-      </tr>
+  renderLines(lines, ext) {
+    const lineNumRows = lines.map((line, i) => (
+      <pre key={i} className="line-num">{i+1}</pre>
     ))
     return (
-      <table className="lines"><tbody>{lineRows}</tbody></table>
+      <table>
+        <tbody>
+          <tr>
+            <td className="line-nums">{lineNumRows}</td>
+            <td className="file-code">
+              <Highlight className={ext}>{lines.join('\n')}</Highlight>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     )
   }
 }

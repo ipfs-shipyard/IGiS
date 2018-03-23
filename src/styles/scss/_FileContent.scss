@@ -1,17 +1,37 @@
 .FileContent {
-	padding: 0.5em;
-
-    font-family: "SFMono-Regular",Consolas,"Liberation Mono",Menlo,Courier,monospace;
+    font-family: Consolas, monaco, monospace;
     font-size: 0.8em;
     word-wrap: normal;
     white-space: pre;
 
-    .line-num {
+    table {
+        border-collapse: collapse;
+    }
+    td {
+        padding: 0;
+        vertical-align: top;
+    }
+    td.line-nums {
+        padding: 0 0.75em;    
+    }
+    td.file-code {
+        width: 100%;
+    }
+    td.file-code code {
+        padding: 0 0.75em
+    }
+
+    pre {
+        margin: 0;
+        font-size: 1em;
+        line-height: 1.75em;
+    }
+    pre.line-num {
         text-align: right;
-        padding: 0 0.5em;
         color: #999999;
     }
-    .line-text {
-        padding: 0 0.5em;
+
+    code.hjls {
+        padding: 0;
     }
 }
