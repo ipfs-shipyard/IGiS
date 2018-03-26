@@ -6,6 +6,7 @@
     "highlightjs": "^9.10.0",
     "ipfs": "^0.27.7",
     "ipfs-css": "^0.2.0",
+    "moment": "^2.21.0",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "react-highlight": "^0.12.0",
