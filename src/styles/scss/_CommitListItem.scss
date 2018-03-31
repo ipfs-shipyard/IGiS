@@ -1,4 +1,4 @@
-.CommitTitle {
+.CommitListItem {
     padding: 0.5em 0.5em 0 0.5em;
     margin: 0.5em 0;
     font-size: 0.9em;
@@ -6,6 +6,7 @@
     .author {
     	display: inline-block;
     	margin-right: 0.5em;
+        width: 10em;
     }
     .description {
     	display: inline-block;

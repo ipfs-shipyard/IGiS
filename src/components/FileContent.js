@@ -1,11 +1,9 @@
-import React, { Component } from 'react';
+import React, { Component } from 'react'
 import Highlight from 'react-highlight'
 
 class FileContent extends Component {
   render() {
-    const file = this.props.file
-    // TODO: Parse BLOB properly
-    const str = file.toString().replace(/^blob [0-9]+/, '')
+    const str = this.props.content
     let lines = str.toString().split('\n')
     if (lines[lines.length - 1] === '') {
       lines = lines.splice(0, lines.length - 1)

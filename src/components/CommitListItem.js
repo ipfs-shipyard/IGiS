@@ -1,19 +1,17 @@
 import React, { Component } from 'react'
+import { Link } from 'react-router-dom'
 
-class CommitTitle extends Component {
+class CommitListItem extends Component {
   render() {
     const commit = this.props.commit
-    if (!commit) {
-      return <div>Loading</div>
-    }
 
     return (
-      <div className="CommitTitle">
+      <div className="CommitListItem">
         <div className="author">
-          <span>{(commit.author || {}).name}</span>:
+          {commit.author.name}
         </div>
         <div className="description">
-          {commit.summary}
+          <Link to={`/commit/${commit.cid}`}>{commit.summary}</Link>
         </div>
         <div className="at">
           {commit.author.moment.fromNow()}
@@ -23,4 +21,4 @@ class CommitTitle extends Component {
   }
 }
 
-export default CommitTitle
+export default CommitListItem
