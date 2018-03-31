@@ -1,0 +1,18 @@
+.StatusBar {
+    height: 100%;
+    padding: 0 2rem;
+    max-width: 72rem;
+    margin: 0px auto;
+
+    div {
+    	margin-top: 1em;
+    }
+
+	.title {
+	    float: left;
+	}
+
+	.menu {
+	    float: right;
+	}
+}

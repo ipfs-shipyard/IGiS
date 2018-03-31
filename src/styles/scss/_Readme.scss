@@ -1,0 +1,13 @@
+.Readme {
+    margin-top: 1em;
+    padding: 0.5em;
+
+    > .title {
+    	font-weight: 400;
+        border-bottom: 1px solid #d1d1d1;
+        padding: 0.5em;
+    }
+    > .source {
+    	padding: 0.5em
+    }
+}
