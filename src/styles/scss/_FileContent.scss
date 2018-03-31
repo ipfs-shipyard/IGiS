@@ -1,0 +1,39 @@
+.FileContent {
+    padding: 0.5em 0;
+    font-family: Consolas, monaco, monospace;
+    font-size: 0.8em;
+    word-wrap: normal;
+    white-space: pre;
+    overflow-x: auto;
+
+    table {
+        border-collapse: collapse;
+    }
+    td {
+        padding: 0;
+        vertical-align: top;
+    }
+    td.line-nums {
+        padding: 0 0.75em;    
+    }
+    td.file-code {
+        width: 100%;
+    }
+    td.file-code code {
+        padding: 0 0.75em
+    }
+
+    pre {
+        margin: 0;
+        font-size: 1em;
+        line-height: 1.75em;
+    }
+    pre.line-num {
+        text-align: right;
+        color: #999999;
+    }
+
+    code.hjls {
+        padding: 0;
+    }
+}
