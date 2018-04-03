@@ -1,0 +1,6 @@
+# See https://help.github.com/articles/about-codeowners/ for more information
+
+# Global owner
+*		@magik6k
+
+# Subsystem specific owners
