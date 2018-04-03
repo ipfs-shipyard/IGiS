@@ -7,6 +7,7 @@
  *    IE on Windows Phone and in iOS.
  */
 @import url(../../../node_modules/ipfs-css/ipfs.css);
+@import url(../../../node_modules/highlight.js/styles/default.css);
 html {
   line-height: 1.15;
   /* 1 */
@@ -3743,10 +3744,10 @@ code, .code {
   width: 100%; }
 
 .w-third {
-  width: 33.3333333333%; }
+  width: 33.33333%; }
 
 .w-two-thirds {
-  width: 66.6666666667%; }
+  width: 66.66667%; }
 
 .w-auto {
   width: auto; }
@@ -3810,10 +3811,10 @@ code, .code {
     width: 100%; }
 
   .w-third-ns {
-    width: 33.3333333333%; }
+    width: 33.33333%; }
 
   .w-two-thirds-ns {
-    width: 66.6666666667%; }
+    width: 66.66667%; }
 
   .w-auto-ns {
     width: auto; } }
@@ -3876,10 +3877,10 @@ code, .code {
     width: 100%; }
 
   .w-third-m {
-    width: 33.3333333333%; }
+    width: 33.33333%; }
 
   .w-two-thirds-m {
-    width: 66.6666666667%; }
+    width: 66.66667%; }
 
   .w-auto-m {
     width: auto; } }
@@ -3942,10 +3943,10 @@ code, .code {
     width: 100%; }
 
   .w-third-l {
-    width: 33.3333333333%; }
+    width: 33.33333%; }
 
   .w-two-thirds-l {
-    width: 66.6666666667%; }
+    width: 66.66667%; }
 
   .w-auto-l {
     width: auto; } }
@@ -7967,16 +7968,144 @@ code, .code {
 */
 .App {
   display: grid;
-  grid-template-rows: 50px auto; }
+  grid-template-rows: 50px auto;
+  font-family: "Gotham Rounded A", "Gotham Rounded B", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 300;
+  letter-spacing: 0.01em;
+  color: #606c76; }
+  .App a {
+    color: #9b4dca;
+    text-decoration: none; }
+  .App header {
+    background: #f4f5f6;
+    border-bottom: 1px solid #d1d1d1; }
+  .App main {
+    width: 69rem;
+    margin: 0 auto; }
+
+.BreadCrumb {
+  padding: 0.5em 0.5em 0 0.5em; }
+  .BreadCrumb div {
+    display: inline-block; }
+  .BreadCrumb .separator {
+    margin: 0 0.5em; }
+
+.Commits .more-link {
+  padding: 0.5em;
+  text-align: center;
+  font-size: 0.9em; }
+
+.CommitDiffFile {
+  margin-bottom: 2em; }
+  .CommitDiffFile > pre {
+    border-top: 1px solid #d1d1d1;
+    font-size: 0.9em; }
+
+.CommitDiffList {
+  padding: 0.5em; }
+
+.CommitListItem {
+  padding: 0.5em 0.5em 0 0.5em;
+  margin: 0.5em 0;
+  font-size: 0.9em; }
+  .CommitListItem .author {
+    display: inline-block;
+    margin-right: 0.5em;
+    width: 10em; }
+  .CommitListItem .description {
+    display: inline-block; }
+  .CommitListItem .at {
+    color: #999;
+    display: inline-block;
+    float: right; }
+
+.CommitTitle {
+  padding: 0.5em 0.5em 0 0.5em;
+  margin: 0.5em 0;
+  font-size: 0.9em; }
+  .CommitTitle .author {
+    display: inline-block;
+    margin-right: 0.5em; }
+  .CommitTitle .description {
+    display: inline-block; }
+  .CommitTitle .at {
+    color: #999;
+    display: inline-block;
+    float: right; }
+
+.FileContent {
+  padding: 0.5em 0;
+  font-family: Consolas, monaco, monospace;
+  font-size: 0.8em;
+  word-wrap: normal;
+  white-space: pre;
+  overflow-x: auto; }
+  .FileContent table {
+    border-collapse: collapse; }
+  .FileContent td {
+    padding: 0;
+    vertical-align: top; }
+  .FileContent td.line-nums {
+    padding: 0 0.75em; }
+  .FileContent td.file-code {
+    width: 100%; }
+  .FileContent td.file-code code {
+    padding: 0 0.75em; }
+  .FileContent pre {
+    margin: 0;
+    font-size: 1em;
+    line-height: 1.75em; }
+  .FileContent pre.line-num {
+    text-align: right;
+    color: #999999; }
+  .FileContent code.hjls {
+    padding: 0; }
+
+.Home {
+  padding: 0.5em; }
+
+.Readme {
+  margin-top: 1em;
+  padding: 0.5em; }
+  .Readme > .title {
+    font-weight: 400;
+    border-bottom: 1px solid #d1d1d1;
+    padding: 0.5em; }
+  .Readme > .source {
+    padding: 0.5em; }
+
+.Repo {
+  padding: 0.5em 0; }
+
+.RepoLinks {
+  padding: 0.5em; }
 
 .StatusBar {
-  display: grid;
-  grid-template-columns: 6em auto;
-  height: 100%; }
+  height: 100%;
+  padding: 0 2rem;
+  max-width: 72rem;
+  margin: 0px auto; }
+  .StatusBar div {
+    margin-top: 1em; }
+  .StatusBar .title {
+    float: left; }
+  .StatusBar .menu {
+    float: right; }
 
-.StatusBar div {
-  justify-self: center;
-  align-self: center; }
+.Tree {
+  padding: 0.5em; }
+  .Tree > .item {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    padding: 0.5em 2em;
+    background-size: 2.5em;
+    background-position: -0.5em center;
+    background-repeat: no-repeat; }
+  .Tree .dir {
+    background-image: url(/images/icons/ipfs/stroke_folder.svg); }
+  .Tree .file {
+    background-image: url(/images/icons/ipfs/stroke_document.svg); }
 
 .WithMenu {
   display: grid;
