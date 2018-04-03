@@ -9,7 +9,7 @@ class Home extends Component {
         <br/>
         Take a look at the <Link to="/repo/z8mWaFhNutrvGaKNcybtLjgLMEC3n5tC5">Demo Tree</Link><br/>
         <br/>
-        Check out the source code at <Link to="https://github.com/ipfs-shipyard">https://github.com/ipfs-shipyard</Link><br/>
+        Check out the source code at <a href="https://github.com/ipfs-shipyard/IGiS">https://github.com/ipfs-shipyard/IGiS</a><br/>
         <br/>
       </p>
     );
