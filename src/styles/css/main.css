@@ -8098,14 +8098,11 @@ code, .code {
     text-decoration: none;
     color: inherit;
     display: block;
-    padding: 0.5em 2em;
-    background-size: 2.5em;
-    background-position: -0.5em center;
-    background-repeat: no-repeat; }
+    padding: 0.5em 2em; }
   .Tree .dir {
-    background-image: url(/images/icons/ipfs/stroke_folder.svg); }
+    background: url(/images/icons/folder.svg) left no-repeat; }
   .Tree .file {
-    background-image: url(/images/icons/ipfs/stroke_document.svg); }
+    background: url(/images/icons/file-text.svg) left no-repeat; }
 
 .WithMenu {
   display: grid;
