@@ -79,7 +79,10 @@ fabric.properties
 /coverage
 
 # production
-/build
+/public
+
+# styles
+src/styles/css/main.css
 
 # misc
 .DS_Store
