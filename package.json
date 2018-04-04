@@ -44,6 +44,7 @@
     "react-markdown": "^3.3.0",
     "react-router": "^4.2.0",
     "react-router-dom": "^4.2.2",
+    "sass": "^1.1.1",
     "style-loader": "0.19.0",
     "sw-precache-webpack-plugin": "0.11.4",
     "tachyons-sass": "^4.9.2",
@@ -55,7 +56,7 @@
   },
   "scripts": {
     "start": "sass --watch src/styles/scss:src/styles/css | node scripts/start.js",
-    "build": "node scripts/build.js",
+    "build": "sass src/styles/scss/main.scss src/styles/css/main.css | node scripts/build.js",
     "test": "node scripts/test.js --env=jsdom"
   },
   "devDependencies": {
