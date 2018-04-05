@@ -44,7 +44,6 @@
     "react-markdown": "^3.3.0",
     "react-router": "^4.2.0",
     "react-router-dom": "^4.2.2",
-    "sass": "^1.1.1",
     "style-loader": "0.19.0",
     "sw-precache-webpack-plugin": "0.11.4",
     "tachyons-sass": "^4.9.2",
@@ -55,13 +54,18 @@
     "whatwg-fetch": "2.0.3"
   },
   "scripts": {
-    "start": "sass --watch src/styles/scss:src/styles/css | node scripts/start.js",
-    "build": "sass src/styles/scss/main.scss src/styles/css/main.css | node scripts/build.js",
+    "build-css": "node-sass-chokidar src/styles/scss/ -o src/styles/css/",
+    "watch-css": "npm run build-css && node-sass-chokidar src/styles/scss/ -o src/styles/css/ --watch --recursive",
+    "start-js": "node scripts/start.js",
+    "start": "npm-run-all -p watch-css start-js",
+    "build-js": "node scripts/build.js",
+    "build": "npm-run-all build-css build-js",
     "test": "node scripts/test.js --env=jsdom"
   },
   "devDependencies": {
     "less-watch-compiler": "^1.11.0",
-    "node-sass": "^4.7.2",
+    "node-sass-chokidar": "^1.2.2",
+    "npm-run-all": "^4.1.2",
     "sass-loader": "^6.0.6",
     "style-loader": "^0.20.2"
   },
