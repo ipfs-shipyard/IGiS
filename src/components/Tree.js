@@ -15,9 +15,23 @@ class Tree extends Component {
   }
 
   renderFiles(files) {
-    return files.map(file =>
+    return files.sort(Tree.compareFiles).map(file =>
       <TreeItem key={file.name} basePath={this.props.path} file={file} />
     )
+  }
+
+  static compareFiles(a, b) {
+    if(a.isDir() !== b.isDir()) {
+      return a.isDir() ? -1 : 1;
+    }
+    if (a.name < b.name) {
+      return -1;
+    }
+    if (a.name > b.name) {
+      return 1;
+    }
+
+    return 0;
   }
 }
 
