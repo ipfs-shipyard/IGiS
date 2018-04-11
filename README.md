@@ -13,24 +13,12 @@
 ### Prerequisites
 * Node.js
 * NPM
-* Scala
-* SBT
 
 ### Before first build
-* `make setup`
+* `npm install`
 
 ### Build
-* `make build`
-
-### Project Structure
-This is a client-side Scala.js single-page app loosely based on the MVC convention.
-
-* [Main class](src/main/scala/igis/App.scala)
-* [Controllers](src/main/scala/igis/app/controllers)
-* [Views (templates)](src/main/twirl)
-* [Models](src/main/scala/models)
-* [Styles](src/main/assets)
-* [JS-Scala bindings](src/main/scala/binding)
+* `npm run-script build`
 
 ## Contribute
 
