@@ -44,11 +44,20 @@ class Commits extends Component {
   }
 
   triggerFetch(commitCid) {
-    if (this.fetchedCommit === commitCid) return
-    this.fetchedCommit = commitCid
+    // Check if we're already processing this commit
+    if ((this.currentCommit || {}).cid === commitCid) return
 
-    // fetch one extra row for pagination purposes
-    GitCommit.fetchCommitAndParents(commitCid, this.rowCount + 1, commits => {
+    // If we were fetching another commit, cancel it
+    if ((this.currentCommit || {}).fetch) {
+      this.currentCommit.fetch.cancel()
+    }
+    this.currentCommit = {
+      cid: commitCid
+    }
+
+    // Fetch one extra row for pagination purposes
+    const rowCount = this.rowCount + 1
+    this.currentCommit.fetch = GitCommit.fetchCommitAndParents(commitCid, rowCount, commits => {
       this.setState({ commits })
     })
   }
