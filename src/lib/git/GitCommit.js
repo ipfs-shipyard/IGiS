@@ -2,6 +2,8 @@ import CID from 'cids'
 import moment from 'moment'
 import Git from './Git'
 
+const COMMIT_SUMMARY_LEN = 80
+
 class Fetcher {
   start() {
     this.running = true
@@ -12,7 +14,7 @@ class Fetcher {
   }
 }
 
-class CommitAndParentsFetcher extends Fetcher {
+class RecursiveCommitFetcher extends Fetcher {
   constructor(cid, countRequired, onUpdate) {
     super()
     this.cid = cid
@@ -59,7 +61,7 @@ class CommitAndParentsFetcher extends Fetcher {
   }
 }
 
-class ChangesFetcher extends Fetcher {
+class DiffFetcher extends Fetcher {
   constructor(cid, parents, onUpdate) {
     super()
     this.cid = cid
@@ -156,8 +158,8 @@ class GitCommit {
     this.committer.moment  = moment(this.author.date, 'X ZZ')
 
     this.summary = this.message
-    if (this.message.length > 80) {
-      this.summary = this.message.substring(0, 80) + '...'
+    if (this.message.length > COMMIT_SUMMARY_LEN) {
+      this.summary = this.message.substring(0, COMMIT_SUMMARY_LEN) + '...'
     }
 
     const parents = []
@@ -174,18 +176,17 @@ class GitCommit {
   }
 
   // Compare this commit's tree to its parent tree
-  fetchChanges(onUpdate) {
-    const fetcher = new ChangesFetcher(this.cid, this.parents, onUpdate)
+  fetchDiff(onUpdate) {
+    const fetcher = new DiffFetcher(this.cid, this.parents, onUpdate)
     fetcher.start()
     return fetcher
   }
 
   static fetchCommitAndParents(cid, countRequired, onUpdate) {
-    const fetcher = new CommitAndParentsFetcher(cid, countRequired, onUpdate)
+    const fetcher = new RecursiveCommitFetcher(cid, countRequired, onUpdate)
     fetcher.start()
     return fetcher
   }
 }
 
 export default GitCommit
-

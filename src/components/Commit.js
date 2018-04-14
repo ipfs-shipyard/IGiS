@@ -35,7 +35,7 @@ class Commits extends Component {
     const commit = await Git.fetch(cid)
     this.setState({ commit })
 
-    commit.fetchChanges(changes => this.setState(changes))
+    commit.fetchDiff(changes => this.setState(changes))
   }
 }
 
