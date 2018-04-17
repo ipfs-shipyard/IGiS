@@ -22,42 +22,46 @@ class RecursiveCommitFetcher extends Fetcher {
     this.onUpdate = onUpdate
     this.count = 0
     this.fetched = {}
+    this.queue = []
     this.commits = []
   }
 
   run() {
-    return this.fetch(this.cid)
+    this.fetched[this.cid] = true
+    return Git.fetch(this.cid).then(c => this.processCommit(c))
   }
 
-  fetch(cid) {
+  async processCommit(commit) {
     if (!this.running) return
+
+    this.count++
+
+    // Update the list of fetched commits
+    this.commits = this.commits.concat([commit])
+    this.onUpdate(this.commits.slice(0, this.countRequired))
 
     // If we've collected enough commits, we're done
     if (this.count >= this.countRequired) {
       return
     }
 
-    // If we've already fetched this commit, skip it
-    if (this.fetched[cid]) {
-      return
-    }
-    this.fetched[cid] = true
+    // Fetch the parents of the commit
+    const parentCids = commit.parents.map(p => p.cid).filter(c => !this.fetched[c])
+    parentCids.forEach(c => this.fetched[c] = true)
+    const parents = await Promise.all(parentCids.map(Git.fetch))
 
-    // Fetch a commit
-    return Git.fetch(cid).then(async commit => {
-      if (!this.running) return
-
-      this.count++
-
-      // Update the list of commits
-      this.commits = this.commits.concat([commit])
-      this.onUpdate(this.commits.slice(0, this.countRequired))
-
-      // Fetch the parents of the commit in reverse order
-      for (let i = commit.parents.length - 1; i >= 0; i--) {
-        await this.fetch(commit.parents[i].cid)
-      }
+    // Add the parents of the commit to the queue and sort the newest commits
+    // to the front
+    this.queue = this.queue.concat(parents).sort((a, b) => {
+      return b.committer.moment.valueOf() - a.committer.moment.valueOf()
     })
+
+    // If there are no more commits to fetch, we're done
+    if (!this.queue.length) return
+
+    // Process the newest commit
+    const newest = this.queue.shift()
+    return this.processCommit(newest)
   }
 }
 
@@ -155,7 +159,7 @@ class GitCommit {
     this.cid = cid
 
     this.author.moment = moment(this.author.date, 'X ZZ')
-    this.committer.moment  = moment(this.author.date, 'X ZZ')
+    this.committer.moment  = moment(this.committer.date, 'X ZZ')
 
     this.summary = this.message
     if (this.message.length > COMMIT_SUMMARY_LEN) {
