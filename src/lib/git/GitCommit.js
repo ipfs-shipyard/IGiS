@@ -71,12 +71,7 @@ class DiffFetcher extends Fetcher {
   }
 
   run() {
-    if (!this.parents.length) {
-      this.cancel()
-      return
-    }
-
-    return this.fetchTrees(`${this.cid}/tree`, `${this.cid}/parents/0/tree`)
+    return this.fetchTrees(`${this.cid}/tree`, this.parents.length && `${this.cid}/parents/0/tree`)
   }
 
   async fetchTrees(t1, t2) {
@@ -84,7 +79,7 @@ class DiffFetcher extends Fetcher {
 
     const trees = await Promise.all([
       Git.fetch(t1),
-      Git.fetch(t2)
+      t2 && Git.fetch(t2)
     ])
 
     const changes = this.getChanges(...trees)
