@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
+import ZipButton from './ZipButton'
 
 class RepoLinks extends Component {
   render() {
@@ -7,6 +8,7 @@ class RepoLinks extends Component {
       <div className="RepoLinks">
         <div className="commits">
           <Link to={`/repo/${this.props.cid}/commits`}>Commits</Link>
+          <ZipButton cid={this.props.cid} />
         </div>
       </div>
     );
