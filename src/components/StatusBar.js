@@ -10,6 +10,7 @@ class StatusBar extends Component {
         </div>
         <div className="menu">
           <Link to="/repo/z8mWaFhNutrvGaKNcybtLjgLMEC3n5tC5">Demo Tree</Link>
+          <Link to="/new/repo">New Repository</Link>
         </div>
       </div>
     );

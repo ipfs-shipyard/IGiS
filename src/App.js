@@ -6,6 +6,7 @@ import Commit from './components/Commit'
 import Commits from './components/Commits'
 import Panic from './components/Panic'
 import StatusBar from "./components/StatusBar";
+import NewRepo from "./components/NewRepo";
 
 class App extends Component {
   render() {
@@ -23,6 +24,7 @@ class App extends Component {
         <main>
           <Switch>
             <Route exact path="/" component={Home}/>
+            <Route exact path="/new/repo" component={NewRepo}/>
             <Route path="/repo/:repoCid/commits" component={Commits}/>
             <Route path="/repo/:repoCid" component={Repo}/>
             <Route path="/commit/:commitCid" component={Commit}/>
