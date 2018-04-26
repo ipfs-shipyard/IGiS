@@ -6,7 +6,7 @@ class Home extends Component {
     return (
       <span className="Home">
         <p>Welcome to IGiS</p>
-        <p>Take a look at the <Link to="/repo/z8mWaFhNutrvGaKNcybtLjgLMEC3n5tC5">Demo Tree</Link></p>
+        <p>Take a look at the <Link to="/repo/QmViWi5az9iiPzESM6ruHf84TcmHSAVQ2KQdNveoDH7eaY">Demo Tree</Link></p>
         <p>Check out the source code at <a href="https://github.com/ipfs-shipyard/IGiS">https://github.com/ipfs-shipyard/IGiS</a></p>
       </span>
     );

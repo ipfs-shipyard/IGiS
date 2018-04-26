@@ -48,19 +48,17 @@ class ZipButton extends Component {
   }
 
   render() {
-    if(this.state.processing) {
-      return (
-        <span>
-          Zip: processing {this.state.current}
-        </span>
-      );
-    }
-
+    if (!this.props.cid) return null
+    
     return (
-      <span>
-        <a href='#' onClick={this.handleClick}>Download Zip</a>
+      <span className="ZipButton">
+        { this.state.processing ? (
+          <span>Zip: processing {this.state.current}</span>
+        ) : (
+          <a href='#' onClick={this.handleClick}>Download Zip</a>
+        )}
       </span>
-    );
+    )
   }
 }
 

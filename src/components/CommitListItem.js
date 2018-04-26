@@ -11,7 +11,7 @@ class CommitListItem extends Component {
           {commit.author.name}
         </div>
         <div className="description">
-          <Link to={`/commit/${commit.cid}`}>{commit.summary}</Link>
+          <Link to={`/repo/${this.props.repoCid}/commit/${commit.cid}`}>{commit.summary}</Link>
         </div>
         <div className="at">
           {commit.author.moment.fromNow()}

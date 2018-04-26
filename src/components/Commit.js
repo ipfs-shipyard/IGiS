@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import CommitDiffList from "./CommitDiffList"
 import CommitTitle from "./CommitTitle"
 import Git from "../lib/git/Git"
+import Url from '../lib/Url'
 
 class Commits extends Component {
   constructor(props) {
@@ -29,10 +30,8 @@ class Commits extends Component {
     if (this.initialized) return
     this.initialized = true
 
-    // /commit/<cid>
-    const parts = pathname.split('/')
-    let cid = parts[2]
-    const commit = await Git.fetch(cid)
+    const url = Url.parseCommitPath(pathname)
+    const commit = await Git.fetch(url.commitCid)
     this.setState({ commit })
 
     commit.fetchDiff(changes => this.setState(changes))

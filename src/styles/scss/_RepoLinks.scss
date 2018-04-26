@@ -1,11 +1,11 @@
 .RepoLinks {
     padding: 0.5em;
 
-    > .commits {
-        display: flex;
-
-        > * {
-            padding: 5px;
-        }
+    .commits {
+    	display: inline-block;
+    	float: right;
+    }
+    .ZipButton {
+        margin: 0 0.5em 0 0;
     }
 }
