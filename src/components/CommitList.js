@@ -3,9 +3,7 @@ import CommitListItem from './CommitListItem'
 
 class CommitList extends Component {
   render() {
-    if (!(this.props.commits || []).length) {
-      return <div>Loading</div>
-    }
+    if (!(this.props.commits || []).length) return null
 
     return (
       <div className="CommitList">
@@ -16,7 +14,7 @@ class CommitList extends Component {
 
   renderCommits(commits) {
     return commits.map(c =>
-      <CommitListItem key={c.cid} commit={c} />
+      <CommitListItem key={c.cid} repoCid={this.props.repoCid} commit={c} />
     )
   }
 }

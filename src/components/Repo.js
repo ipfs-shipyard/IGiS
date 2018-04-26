@@ -1,13 +1,14 @@
-import BreadCrumb from "./BreadCrumb"
 import CommitTitle from "./CommitTitle"
 import FileContent from "./FileContent"
 import Git from '../lib/git/Git'
 import GitBlob from '../lib/git/GitBlob'
+import GitRepo from '../lib/git/GitRepo'
 import GitTree from '../lib/git/GitTree'
 import React, { Component } from 'react'
 import Readme from "./Readme"
 import RepoLinks from "./RepoLinks"
 import Tree from "./Tree"
+import Url from '../lib/Url'
 
 class Repo extends Component {
   constructor(props) {
@@ -17,69 +18,70 @@ class Repo extends Component {
 
   render() {
     const pathname = this.props.location.pathname
+    const url = Url.parseRepoPath(pathname)
 
     // If we have not yet fetched the data for the repo, continue with
     // rendering but trigger a fetch in the background (which will
     // call render again on completion)
-    this.triggerCommitFetch(pathname)
-    this.triggerPathFetch(pathname)
+    this.triggerFetch(url.repoCid, url.branch)
 
     let content = null
-    if (this.state.data instanceof GitBlob) {
+    if (url.gitType === 'blob' && this.state.data instanceof GitBlob) {
       content = <FileContent content={this.state.data} path={pathname} />
     } else if (this.state.data instanceof GitTree) {
       content = (
         <div>
-          <Tree tree={this.state.data} path={pathname} />
+          <Tree repo={this.state.repo} tree={this.state.data} />
           <Readme blob={this.state.readme} />
         </div>
       )
     }
 
-    // /repo/<cid>/my/file/path.go
-    const parts = pathname.split('/')
-    const basePath = parts.slice(0, 2).join('/')
-    const crumbs = parts.slice(2)
-
-    const { match: { params: { repoCid } } } = this.props
+    const defaultBranch = url.branch || GitRepo.branchNick((this.state.repo || {}).defaultBranch)
     return (
       <div className="Repo">
-        {parts.length === 3 &&
-          <RepoLinks cid={repoCid} />
-        }
-        <BreadCrumb path={basePath} crumbs={crumbs} />
+        <RepoLinks repo={this.state.repo} url={url} branch={defaultBranch} />
         <CommitTitle commit={this.state.commit} />
         {content}
       </div>
     )
   }
 
-  // Get the commit for the CID in the url
-  triggerCommitFetch(pathname) {
-    if (this.commitFetched) return
-    this.commitFetched = true
+  async triggerFetch(repoCid, branch) {
+    if (this.repoFetched) {
+      this.triggerBranchFetch(branch)
+      return
+    }
+    this.repoFetched = true
 
-    // /repo/<cid>/my/file/path.go
-    let parts = pathname.split('/')
-    let cid = parts[2]
-    Git.fetch(cid).then(commit => this.setState({ commit }))
+    // Get the repo
+    return GitRepo.fetch(repoCid, repo => {
+      this.setState({ repo })
+      this.triggerBranchFetch(branch)
+    })
   }
 
-  // Get the tree or blob identified in the url
-  triggerPathFetch(pathname) {
+  triggerBranchFetch(branch) {
+    const repo = this.state.repo
+    if (!repo) return
+
+    const commit = repo.headCommit(branch)
+    this.triggerPathFetch(commit)
+  }
+
+  // Get the blob or tree identified in the url
+  triggerPathFetch(commit) {
+    const pathname = this.props.location.pathname
     if (this.pathFetched === pathname) return
     this.pathFetched = pathname
 
-    // /repo/<cid>/my/file/path.go
-    let parts = pathname.split('/')
-    let cid = parts[2]
-    let rest = parts.slice(3)
-    let dagPath = `${cid}/tree`
-    if (rest.length) {
-      dagPath += '/' + rest.join('/hash/') + '/hash'
+    const url = Url.parseRepoPath(pathname)
+    let dagPath = `${commit.cid}/tree`
+    if (url.filePathParts.length) {
+      dagPath += '/' + url.filePathParts.join('/hash/') + '/hash'
     }
     Git.fetch(dagPath).then(data => {
-      this.setState({ data })
+      this.setState({ data, commit })
       this.triggerReadmeFetch()
     })
   }

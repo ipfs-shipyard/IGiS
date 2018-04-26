@@ -25,9 +25,9 @@ class App extends Component {
           <Switch>
             <Route exact path="/" component={Home}/>
             <Route exact path="/new/repo" component={NewRepo}/>
-            <Route path="/repo/:repoCid/commits" component={Commits}/>
+            <Route path="/repo/:repoCid/commit/:commitCid" component={Commit}/>
+            <Route path="/repo/:repoCid/commits/:branch" component={Commits}/>
             <Route path="/repo/:repoCid" component={Repo}/>
-            <Route path="/commit/:commitCid" component={Commit}/>
           </Switch>
         </main>
       </div>

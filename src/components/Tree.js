@@ -16,7 +16,7 @@ class Tree extends Component {
 
   renderFiles(files) {
     return files.sort(Tree.compareFiles).map(file =>
-      <TreeItem key={file.name} basePath={this.props.path} file={file} />
+      <TreeItem key={file.name} repo={this.props.repo} tree={this.props.tree} file={file} />
     )
   }
 
