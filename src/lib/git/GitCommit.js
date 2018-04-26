@@ -156,9 +156,9 @@ class GitCommit {
     this.author.moment = moment(this.author.date, 'X ZZ')
     this.committer.moment  = moment(this.committer.date, 'X ZZ')
 
-    this.summary = this.message
-    if (this.message.length > COMMIT_SUMMARY_LEN) {
-      this.summary = this.message.substring(0, COMMIT_SUMMARY_LEN) + '...'
+    this.summary = this.message.split('\n')[0]
+    if (this.summary.length > COMMIT_SUMMARY_LEN) {
+      this.summary = this.summary.substring(0, COMMIT_SUMMARY_LEN) + '...'
     }
 
     const parents = []
