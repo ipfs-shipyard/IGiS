@@ -8,8 +8,8 @@ class Home extends Component {
         <p>Welcome to IGiS</p>
         <p>
           IGiS - Interplanetary Git Service - is a decentralized
-          alternative to services like GitHub. It's built with
-          <a href="https://ipfs.io">IPFS</a> and <a href="https://ipld.io">IPLD</a>.
+          alternative to services like GitHub. It's built
+          with <a href="https://ipfs.io">IPFS</a> and <a href="https://ipld.io">IPLD</a>.
         </p>
         <p>Take a look at the <Link to="/repo/QmViWi5az9iiPzESM6ruHf84TcmHSAVQ2KQdNveoDH7eaY">Demo Tree</Link></p>
         <p>
