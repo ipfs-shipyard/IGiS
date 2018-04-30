@@ -1,6 +1,5 @@
 website([
-  website: 'igis.devtty.eu',
-  record: '_dnslink',
-  disable_publish: true
+  website: 'igis.io',
+  record: '_dnslink'
 ])
 
