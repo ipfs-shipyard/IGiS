@@ -35,7 +35,7 @@ def call(opts = []) {
   def disablePublish = false
 
   if (record instanceof CharSequence) {
-    record = ['master': record]
+    record = ['ci/multi-deploy': record]
   }
 
   if (opts['build_directory']) {
@@ -128,9 +128,6 @@ def call(opts = []) {
 
 call([
   website: 'igis.io',
-  record: [
-    'master': '_dnslink',
-    'ci/multi-deploy': '_dnslink.dev',
-  ]
+  record: 'master'
 ])
 
