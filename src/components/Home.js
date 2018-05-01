@@ -18,6 +18,7 @@ class Home extends Component {
           development at the link below
         </p>
         <p>Check out the source code at <a href="https://github.com/ipfs-shipyard/IGiS">https://github.com/ipfs-shipyard/IGiS</a></p>
+        <p>..</p>
       </span>
     );
   }
