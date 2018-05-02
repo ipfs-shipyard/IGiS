@@ -21,7 +21,7 @@ class GitRepo {
     return (branchPath || '').replace('refs/heads/', '')
   }
 
-  static async fetch(cid, onUpdate) {
+  static async fetch(cid) {
     const repo = await window.ipfs.dag.get(cid).then(r => r.value)
 
     const [defaultBranch, branches] = await Promise.all([
@@ -29,7 +29,7 @@ class GitRepo {
       this.getBranchHeads(repo)
     ])
 
-    onUpdate(new GitRepo(cid, defaultBranch, branches))
+    return new GitRepo(cid, defaultBranch, branches)
   }
 
   static async getDefaultBranch(repo) {

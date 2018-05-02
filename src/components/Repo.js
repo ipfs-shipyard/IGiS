@@ -55,7 +55,7 @@ class Repo extends Component {
     this.repoFetched = true
 
     // Get the repo
-    return GitRepo.fetch(repoCid, repo => {
+    return GitRepo.fetch(repoCid).then(repo => {
       this.setState({ repo })
       this.triggerBranchFetch(branch)
     })
