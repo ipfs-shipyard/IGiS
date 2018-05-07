@@ -65,7 +65,7 @@ class Repo extends Component {
     const repo = this.state.repo
     if (!repo) return
 
-    let object = await repo.refCommit(branch)
+    let object = repo.refCommit(branch)
     if(object instanceof GitTag)
       object = await object.taggedObject()
     this.triggerPathFetch(object)

@@ -76,7 +76,7 @@ class Commits extends Component {
   }
 
   async branchHead(branch) {
-    let object = await this.state.repo.refCommit(branch)
+    let object = this.state.repo.refCommit(branch)
     if(object instanceof GitTag)
       object = await object.taggedObject()
     return object.cid

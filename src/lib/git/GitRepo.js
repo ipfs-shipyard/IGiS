@@ -15,7 +15,7 @@ class GitRepo {
     this.branches = branches
   }
 
-  async refCommit(branch) {
+  refCommit(branch) {
     const [ref] = ['heads', 'tags'].filter(b => this.branches['refs/' + b +'/' + branch])
     const branchPath = ref ? 'refs/' + ref + '/' + branch : this.defaultBranch
 
