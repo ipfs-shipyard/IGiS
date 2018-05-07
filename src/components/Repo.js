@@ -65,11 +65,10 @@ class Repo extends Component {
     const repo = this.state.repo
     if (!repo) return
 
-    const object = await repo.refCommit(branch)
-    let toFetch = object
+    let object = await repo.refCommit(branch)
     if(object instanceof GitTag)
-      toFetch = await object.taggedObject()
-    this.triggerPathFetch(toFetch)
+      object = await object.taggedObject()
+    this.triggerPathFetch(object)
   }
 
   // Get the blob or tree identified in the url
