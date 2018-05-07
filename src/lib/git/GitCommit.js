@@ -162,10 +162,7 @@ class GitCommit {
     }
 
     const parents = []
-    const vp = this.parents || []
-    vp.forEach(p => {
-      if (!(p || {})['/']) return
-
+    this.parents.forEach(p => {
       try {
         p.cid = new CID(p['/']).toBaseEncodedString()
         parents.push(p)

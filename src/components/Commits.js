@@ -56,7 +56,7 @@ class Commits extends Component {
     const repo = this.state.repo
     if (!repo) return
 
-    commitCid = commitCid || (repo.headCommit(branch) || {}).cid
+    commitCid = commitCid || (repo.refCommit(branch) || {}).cid
     if (!commitCid) return
 
     // Check if we're already processing this commit

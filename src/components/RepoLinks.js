@@ -14,7 +14,7 @@ class RepoLinks extends Component {
       	<BranchSelector repo={this.props.repo} branch={this.props.branch} />
         <BreadCrumb repo={this.props.repo} branch={this.props.branch} crumbs={crumbs} />
         <div className="commits">
-          <ZipButton cid={(this.props.repo.headCommit(this.props.branch) || {}).cid} />
+          <ZipButton cid={(this.props.repo.refCommit(this.props.branch) || {}).cid} />
           <Link to={`/repo/${this.props.repo.cid}/commits/${encodeURIComponent(this.props.branch)}`}>Commits</Link>
         </div>
       </div>

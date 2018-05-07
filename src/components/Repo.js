@@ -3,6 +3,7 @@ import FileContent from "./FileContent"
 import Git from '../lib/git/Git'
 import GitBlob from '../lib/git/GitBlob'
 import GitRepo from '../lib/git/GitRepo'
+import GitTag from '../lib/git/GitTag'
 import GitTree from '../lib/git/GitTree'
 import React, { Component } from 'react'
 import Readme from "./Readme"
@@ -55,33 +56,35 @@ class Repo extends Component {
     this.repoFetched = true
 
     // Get the repo
-    return GitRepo.fetch(repoCid).then(repo => {
-      this.setState({ repo })
-      this.triggerBranchFetch(branch)
-    })
+    const repo = await GitRepo.fetch(repoCid)
+    this.setState({ repo })
+    this.triggerBranchFetch(branch)
   }
 
-  triggerBranchFetch(branch) {
+  async triggerBranchFetch(branch) {
     const repo = this.state.repo
     if (!repo) return
 
-    const commit = repo.headCommit(branch)
-    this.triggerPathFetch(commit)
+    const object = await repo.refCommit(branch)
+    let toFetch = object
+    if(object instanceof GitTag)
+      toFetch = await object.taggedObject()
+    this.triggerPathFetch(toFetch)
   }
 
   // Get the blob or tree identified in the url
-  triggerPathFetch(commit) {
+  triggerPathFetch(object) {
     const pathname = this.props.location.pathname
     if (this.pathFetched === pathname) return
     this.pathFetched = pathname
 
     const url = Url.parseRepoPath(pathname)
-    let dagPath = `${commit.cid}/tree`
+    let dagPath = `${object.cid}/tree`
     if (url.filePathParts.length) {
       dagPath += '/' + url.filePathParts.join('/hash/') + '/hash'
     }
     Git.fetch(dagPath).then(data => {
-      this.setState({ data, commit })
+      this.setState({ data, object })
       this.triggerReadmeFetch()
     })
   }

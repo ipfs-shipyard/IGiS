@@ -1,6 +1,9 @@
 import CID from 'cids'
 import { DAGNode } from 'ipld-dag-pb'
 import GitCommit from './GitCommit'
+import GitTag from './GitTag'
+import GitBlob from './GitBlob'
+import GitTree from './GitTree'
 
 const DEFAULT_HEAD_REF = 'refs/heads/master'
 const MAX_REFS_DEPTH = 10
@@ -12,13 +15,16 @@ class GitRepo {
     this.branches = branches
   }
 
-  headCommit(branch) {
-    const branchPath = branch ? 'refs/heads/' + branch : this.defaultBranch
-    return (this.branches || {})[branchPath]
+  async refCommit(branch) {
+    const [ref] = ['heads', 'tags'].filter(b => this.branches['refs/' + b +'/' + branch])
+    const branchPath = ref ? 'refs/' + ref + '/' + branch : this.defaultBranch
+
+    return this.branches[branchPath]
   }
 
   static branchNick(branchPath) {
     return (branchPath || '').replace('refs/heads/', '')
+      .replace('refs/tags/', '')
   }
 
   static async fetch(cid) {
@@ -55,10 +61,23 @@ class GitRepo {
       if (obj instanceof DAGNode) {
         return this.walkBranchDir(branches, path + l.name + '/', obj, depth + 1)
       }
-      if(obj.gitType === 'commit') {
-        branches[path + l.name] = new GitCommit(obj, cid)
-      }
+
+      branches[path + l.name] = GitRepo.wrapGitObject(obj, cid)
     }))
+  }
+
+  static wrapGitObject(obj, cid) {
+    if(obj instanceof Blob) {
+      return new GitBlob(obj, cid)
+    }
+    switch (obj.gitType) {
+      case 'commit':
+        return new GitCommit(obj, cid)
+      case 'tag':
+        return new GitTag(obj, cid)
+      default:
+        return new GitTree(obj, cid)
+    }
   }
 }
 

@@ -27,6 +27,7 @@ class BranchSelector extends Component {
 
   branchNick(branch) {
     return branch.replace('refs/heads/', '')
+      .replace('refs/tags/', '')
   }
 
   compareBranches(a, b) {
