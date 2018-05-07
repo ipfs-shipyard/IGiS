@@ -73,18 +73,18 @@ class Repo extends Component {
   }
 
   // Get the blob or tree identified in the url
-  triggerPathFetch(object) {
+  triggerPathFetch(commit) {
     const pathname = this.props.location.pathname
     if (this.pathFetched === pathname) return
     this.pathFetched = pathname
 
     const url = Url.parseRepoPath(pathname)
-    let dagPath = `${object.cid}/tree`
+    let dagPath = `${commit.cid}/tree`
     if (url.filePathParts.length) {
       dagPath += '/' + url.filePathParts.join('/hash/') + '/hash'
     }
     Git.fetch(dagPath).then(data => {
-      this.setState({ data, object })
+      this.setState({ data, commit })
       this.triggerReadmeFetch()
     })
   }
