@@ -1,18 +1,32 @@
 .BranchSelector {
 	display: inline-block;
+	position: relative;
 
-    .title {
-        display: inline-block;
-        margin: 0 0.5em 0 0;
-    }
-    select {
-        background: transparent;
-	    border: none;
-	    font-size: inherit;
-	    font-weight: inherit;
-	    font-family: inherit;
-	    color: #9b4dca;
-	    cursor: pointer;
-	    outline: none;
-    }
+	.branch {
+		color: #9b4dca;
+		cursor: pointer;
+	}
+
+	.branchDropdown {
+		position: absolute;
+		min-width: 18rem;
+
+		.branchList {
+			white-space: nowrap;
+		}
+	}
+
+	.refType {
+		:not(:last-child) {
+			margin: 0 0.5rem 0 0;
+		}
+
+		span {
+			cursor: pointer;
+		}
+
+		.selectable {
+			color: #9b4dca;
+		}
+	}
 }
