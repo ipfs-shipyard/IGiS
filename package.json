@@ -40,6 +40,7 @@
     "promise": "8.0.1",
     "raf": "3.4.0",
     "react": "^16.2.0",
+    "react-click-outside": "github:tj/react-click-outside",
     "react-dev-utils": "^5.0.0",
     "react-dom": "^16.2.0",
     "react-highlight": "^0.12.0",

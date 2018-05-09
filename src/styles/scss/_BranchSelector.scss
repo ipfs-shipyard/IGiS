@@ -2,9 +2,11 @@
 	display: inline-block;
 	position: relative;
 
-	.branch {
-		color: #9b4dca;
+	.branchButton {
 		cursor: pointer;
+		span {
+			color: #9b4dca;
+		}
 	}
 
 	.branchDropdown {
