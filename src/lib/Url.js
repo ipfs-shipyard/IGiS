@@ -1,12 +1,12 @@
 import GitRepo from './git/GitRepo'
 
 class Url {
-  static toFile(repo, tree, file) {
+  static async toFile(repo, tree, file) {
     // <cid>/tree/some/hash/path/hash/to/hash/file.go
     const treePathParts = tree.path.split('/')
     const treeCid = treePathParts[0]
     const path = treePathParts.slice(1).filter((p, i) => i % 2 === 1).concat([file.name]).join('/')
-    const branchPath = (Object.entries(repo.branches).find(([b, o]) => o.cid === treeCid) || [])[0]
+    const branchPath = (Object.entries(await repo.branches).find(([b, o]) => o.cid === treeCid) || [])[0]
     const branch = GitRepo.branchNick(branchPath)
     const type = file.isDir() ? 'tree' : 'blob'
     return `/repo/${repo.cid}/${type}/${encodeURIComponent(branch)}/${path}`

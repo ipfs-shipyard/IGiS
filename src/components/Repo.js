@@ -1,6 +1,5 @@
 import CommitTitle from "./CommitTitle"
 import FileContent from "./FileContent"
-import Git from '../lib/git/Git'
 import GitBlob from '../lib/git/GitBlob'
 import GitRepo from '../lib/git/GitRepo'
 import GitTag from '../lib/git/GitTag'
@@ -65,7 +64,7 @@ class Repo extends Component {
     const repo = this.state.repo
     if (!repo) return
 
-    let object = repo.refCommit(branch)
+    let object = await repo.refCommit(branch)
     if(object instanceof GitTag)
       object = await object.taggedObject()
     this.triggerPathFetch(object)
@@ -82,7 +81,7 @@ class Repo extends Component {
     if (url.filePathParts.length) {
       dagPath += '/' + url.filePathParts.join('/hash/') + '/hash'
     }
-    Git.fetch(dagPath).then(data => {
+    this.state.repo.getObject(dagPath).then(data => {
       this.setState({ data, commit })
       this.triggerReadmeFetch()
     })

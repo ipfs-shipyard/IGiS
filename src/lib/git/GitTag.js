@@ -1,16 +1,16 @@
 import CID from 'cids'
-import GitRepo from './GitRepo'
 
 class GitTag {
-  constructor(data, path) {
+  constructor(repo, data, path) {
     Object.assign(this, data)
+    this.repo = repo
     this.path = path
   }
 
   async taggedObject() {
     const objCid = new CID(this.object['/'])
     const obj =  await window.ipfs.dag.get(objCid)
-    return GitRepo.wrapGitObject(obj.value, objCid.toBaseEncodedString())
+    return this.repo.wrapGitObject(obj.value, objCid.toBaseEncodedString())
   }
 }
 

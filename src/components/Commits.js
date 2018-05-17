@@ -70,13 +70,13 @@ class Commits extends Component {
 
     // Fetch one extra row for pagination purposes
     const rowCount = this.rowCount + 1
-    this.currentCommit.fetch = GitCommit.fetchCommitAndParents(commitCid, rowCount, commits => {
+    this.currentCommit.fetch = GitCommit.fetchCommitAndParents(this.state.repo, commitCid, rowCount, commits => {
       this.setState({ commits })
     })
   }
 
   async branchHead(branch) {
-    let object = this.state.repo.refCommit(branch)
+    let object = await this.state.repo.refCommit(branch)
     if(object instanceof GitTag)
       object = await object.taggedObject()
     return object.cid

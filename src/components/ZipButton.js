@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 import JSZip from 'jszip'
-import Git from '../lib/git/Git'
 import GitTree from "../lib/git/GitTree";
 import GitBlob from "../lib/git/GitBlob";
 import FileSaver from "file-saver";
@@ -31,7 +30,7 @@ class ZipButton extends Component {
 
   async populateTree(zipDir, path, name) {
     this.setState({processing: true, current: path})
-    let data = await Git.fetch(path)
+    let data = await this.props.repo.getObject(path)
     if (data instanceof GitBlob) {
       zipDir.file(name, data.content, {base64: true});
     } else if (data instanceof GitTree) {

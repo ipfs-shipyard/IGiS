@@ -1,5 +1,4 @@
 import CID from 'cids'
-import Git from './Git'
 
 //
 // GitFileDesc describes a file eg
@@ -12,8 +11,9 @@ import Git from './Git'
 // }
 //
 class GitFileDesc {
-  constructor(data, name) {
+  constructor(repo, data, name) {
     Object.assign(this, data)
+    this.repo = repo
     this.name = name
     this.cid = new CID(this.hash['/']).toBaseEncodedString()
   }
@@ -27,7 +27,7 @@ class GitFileDesc {
   }
 
   fetchContents() {
-    return Git.fetch(this.cid)
+    return this.repo.getObject(this.cid)
   }
 }
 

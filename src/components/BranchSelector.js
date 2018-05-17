@@ -1,3 +1,4 @@
+import Async from 'react-promise'
 import React, { Component } from 'react'
 import ClickOutside from 'react-click-outside'
 import Url from '../lib/Url'
@@ -47,7 +48,7 @@ class BranchSelector extends Component {
           </div>
         </div>
         <div className="branchList pa1">
-          {this.renderOptions(this.props.repo.branches)}
+          <Async promise={this.props.repo.branches} then={branches => this.renderOptions(branches)} />
         </div>
       </div>
     )
