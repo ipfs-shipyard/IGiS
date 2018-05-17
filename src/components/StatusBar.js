@@ -9,7 +9,7 @@ class StatusBar extends Component {
           IGiS
         </div>
         <div className="menu">
-          <Link to="/repo/QmViWi5az9iiPzESM6ruHf84TcmHSAVQ2KQdNveoDH7eaY">Demo Tree</Link>
+          <Link to="/repo/QmViWi5az9iiPzESM6ruHf84TcmHSAVQ2KQdNveoDH7eaY">Demo Repository</Link>
           <Link to="/new/repo">New Repository</Link>
         </div>
       </div>

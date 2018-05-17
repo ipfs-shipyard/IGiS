@@ -11,7 +11,12 @@ class Home extends Component {
           alternative to services like GitHub. It's built
           with <a href="https://ipfs.io">IPFS</a> and <a href="https://ipld.io">IPLD</a>.
         </p>
-        <p>Take a look at the <Link to="/repo/QmViWi5az9iiPzESM6ruHf84TcmHSAVQ2KQdNveoDH7eaY">Demo Tree</Link></p>
+        <p>Take a look at demo repositories:
+        </p>
+          <ul>
+            <li><Link to="/repo/QmViWi5az9iiPzESM6ruHf84TcmHSAVQ2KQdNveoDH7eaY">IGiS Repo</Link></li>
+            <li><Link to="/repo/QmU1HJJDFSM8JJq4r31wSLfj51oysQCswz7aL78UWZHuMC">go-ipfs Repo</Link></li>
+          </ul>
         <p>
           NOTE: This project is still WIP and has many rough
           edges and is missing many core features. You can follow
