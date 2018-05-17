@@ -16,12 +16,14 @@ class BranchSelector extends Component {
     if (!this.props.repo) return null
 
     return (
-      <ClickOutside onClickOutside={this.switchType('')}>
-        <div className="BranchSelector">
-          <div className="branchButton" onClick={this.toggleSelector}>Branch: <span>{this.props.branch}</span></div>
-          {this.renderDropdown()}
-        </div>
-      </ClickOutside>
+      <div className="BranchSelector-out">
+        <ClickOutside onClickOutside={this.switchType('')}>
+          <div className="BranchSelector">
+            <div className="branchButton" onClick={this.toggleSelector}>Branch: <span>{this.props.branch}</span></div>
+            {this.renderDropdown()}
+          </div>
+        </ClickOutside>
+      </div>
     )
   }
 

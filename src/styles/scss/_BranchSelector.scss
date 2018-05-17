@@ -1,5 +1,9 @@
-.BranchSelector {
+.BranchSelector-out {
 	display: inline-block;
+	padding: 0.5em 0;
+}
+
+.BranchSelector {
 	position: relative;
 
 	.branchButton {
