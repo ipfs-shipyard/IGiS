@@ -7,6 +7,8 @@ class NewRepo extends Component {
       <span className="NewRepo">
         <p>Creating new repository</p>
 
+        <h3>0. Note that these instructions are outdated</h3>
+
         <p>1. Install <a href="https://ipfs.io/docs/install/">go-ipfs</a> and <a href="https://github.com/magik6k/git-remote-ipld">git-remote-ipld</a></p>
 
         <p>2. Setup git plugin for go-ipfs, see <a href="https://github.com/ipfs/go-ipfs/blob/master/docs/plugins.md">this guide</a></p>

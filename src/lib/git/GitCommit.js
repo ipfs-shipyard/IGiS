@@ -1,6 +1,5 @@
 import CID from 'cids'
 import moment from 'moment'
-import Git from './Git'
 
 const COMMIT_SUMMARY_LEN = 80
 
@@ -15,8 +14,9 @@ class Fetcher {
 }
 
 class RecursiveCommitFetcher extends Fetcher {
-  constructor(cid, countRequired, onUpdate) {
+  constructor(repo, cid, countRequired, onUpdate) {
     super()
+    this.repo = repo
     this.cid = cid
     this.countRequired = countRequired
     this.onUpdate = onUpdate
@@ -28,7 +28,7 @@ class RecursiveCommitFetcher extends Fetcher {
 
   run() {
     this.fetched[this.cid] = true
-    return Git.fetch(this.cid).then(c => this.processCommit(c))
+    return this.repo.getObject(this.cid).then(c => this.processCommit(c))
   }
 
   async processCommit(commit) {
@@ -48,7 +48,7 @@ class RecursiveCommitFetcher extends Fetcher {
     // Fetch the parents of the commit
     const parentCids = commit.parents.map(p => p.cid).filter(c => !this.fetched[c])
     parentCids.forEach(c => this.fetched[c] = true)
-    const parents = await Promise.all(parentCids.map(Git.fetch))
+    const parents = await Promise.all(parentCids.map(this.repo.getObject))
 
     // Add the parents of the commit to the queue and sort the newest commits
     // to the front
@@ -66,8 +66,9 @@ class RecursiveCommitFetcher extends Fetcher {
 }
 
 class DiffFetcher extends Fetcher {
-  constructor(cid, parents, onUpdate) {
+  constructor(repo, cid, parents, onUpdate) {
     super()
+    this.repo = repo
     this.cid = cid
     this.parents = parents
     this.onUpdate = onUpdate
@@ -82,8 +83,8 @@ class DiffFetcher extends Fetcher {
     if (!this.running) return
 
     const trees = await Promise.all([
-      Git.fetch(t1),
-      t2 && Git.fetch(t2)
+      this.repo.getObject(t1),
+      t2 && this.repo.getObject(t2)
     ])
 
     const changes = this.getChanges(...trees)
@@ -149,8 +150,9 @@ class DiffFetcher extends Fetcher {
 }
 
 class GitCommit {
-  constructor(data, cid) {
+  constructor(repo, data, cid) {
     Object.assign(this, data)
+    this.repo = repo
     this.cid = cid
 
     this.author.moment = moment(this.author.date, 'X ZZ')
@@ -162,10 +164,7 @@ class GitCommit {
     }
 
     const parents = []
-    const vp = this.parents || []
-    vp.forEach(p => {
-      if (!(p || {})['/']) return
-
+    this.parents.forEach(p => {
       try {
         p.cid = new CID(p['/']).toBaseEncodedString()
         parents.push(p)
@@ -176,13 +175,13 @@ class GitCommit {
 
   // Compare this commit's tree to its parent tree
   fetchDiff(onUpdate) {
-    const fetcher = new DiffFetcher(this.cid, this.parents, onUpdate)
+    const fetcher = new DiffFetcher(this.repo, this.cid, this.parents, onUpdate)
     fetcher.start()
     return fetcher
   }
 
-  static fetchCommitAndParents(cid, countRequired, onUpdate) {
-    const fetcher = new RecursiveCommitFetcher(cid, countRequired, onUpdate)
+  static fetchCommitAndParents(repo, cid, countRequired, onUpdate) {
+    const fetcher = new RecursiveCommitFetcher(repo, cid, countRequired, onUpdate)
     fetcher.start()
     return fetcher
   }

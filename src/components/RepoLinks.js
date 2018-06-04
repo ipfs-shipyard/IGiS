@@ -1,3 +1,4 @@
+import Async from 'react-promise'
 import BranchSelector from "./BranchSelector"
 import BreadCrumb from "./BreadCrumb"
 import React, { Component } from 'react'
@@ -14,7 +15,9 @@ class RepoLinks extends Component {
       	<BranchSelector repo={this.props.repo} branch={this.props.branch} />
         <BreadCrumb repo={this.props.repo} branch={this.props.branch} crumbs={crumbs} />
         <div className="commits">
-          <ZipButton cid={(this.props.repo.headCommit(this.props.branch) || {}).cid} />
+          <Async promise={this.props.repo.refCommit(this.props.branch)} then={ commit =>
+            <ZipButton repo={this.props.repo} cid={(commit || {}).cid} />
+          } />
           <Link to={`/repo/${this.props.repo.cid}/commits/${encodeURIComponent(this.props.branch)}`}>Commits</Link>
         </div>
       </div>

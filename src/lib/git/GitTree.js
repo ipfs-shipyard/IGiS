@@ -8,9 +8,9 @@ import GitFileDesc from './GitFileDesc'
 // }
 //
 class GitTree {
-  constructor(data, path) {
+  constructor(repo, data, path) {
     this.path = path
-    const files = Object.keys(data).map(name => new GitFileDesc(data[name], name))
+    const files = Object.keys(data).map(name => new GitFileDesc(repo, data[name], name))
     this.files = GitTree.sortFiles(files)
   }
 

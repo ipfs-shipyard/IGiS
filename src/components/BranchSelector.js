@@ -1,32 +1,83 @@
+import Async from 'react-promise'
 import React, { Component } from 'react'
+import ClickOutside from 'react-click-outside'
 import Url from '../lib/Url'
+import { Link } from 'react-router-dom'
 
 class BranchSelector extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {show: ''}
+
+    this.switchType = this.switchType.bind(this)
+    this.toggleSelector = this.toggleSelector.bind(this)
+  }
+
   render() {
     if (!this.props.repo) return null
 
     return (
-      <div className="BranchSelector">
-        <div className="title">Branch:</div>
-      	<select onChange={e => this.handleChange(e)} value={this.props.branch}>
-          {this.renderOptions(this.props.repo.branches)}
-        </select>
+      <div className="BranchSelector-out">
+        <ClickOutside onClickOutside={this.switchType('')}>
+          <div className="BranchSelector">
+            <div className="branchButton" onClick={this.toggleSelector}>Branch: <span>{this.props.branch}</span></div>
+            {this.renderDropdown()}
+          </div>
+        </ClickOutside>
       </div>
     )
   }
 
-  renderOptions(branches) {
-    return Object.keys(branches).sort((a, b) => this.compareBranches(a, b)).map(this.branchNick).map(b =>
-      <option key={b} value={b}>{b}</option>
+  toggleSelector() {
+    this.setState({show: this.state.show === '' ? 'heads' : ''})
+  }
+
+  switchType(type) {
+    return () => this.setState({show: type})
+  }
+
+  renderDropdown() {
+    if(this.state.show === '') return
+
+    return (
+      <div className="branchDropdown bg-white ba">
+        <div>
+          <div className="bb pa1 refType">
+            {this.renderButton('heads', 'Branches')}
+            {this.renderButton('tags', 'Tags')}
+          </div>
+        </div>
+        <div className="branchList pa1">
+          <Async promise={this.props.repo.branches} then={branches => this.renderOptions(branches)} />
+        </div>
+      </div>
     )
   }
 
-  handleChange(event) {
-    window.location.href = '#' + Url.toBranch(this.props.repo, event.target.value)
+  renderButton(type, name) {
+    return <span onClick={this.switchType(type)} className={type !== this.state.show ? 'selectable' : ''}>{name}</span>
+  }
+
+  renderOptions(branches) {
+    const renderType = (type) => {
+      return Object.keys(branches).filter(b => b.startsWith('refs/' + type + '/'))
+        .sort((a, b) => this.compareBranches(a, b))
+        .map(this.branchNick).map(b =>
+        <div key={b}><Link to={Url.toBranch(this.props.repo, b)} onClick={this.switchType('')}>{b}</Link></div>
+      )
+    }
+
+    switch(this.state.show) {
+      case 'heads':
+        return renderType('heads')
+      case 'tags':
+        return renderType('tags')
+    }
   }
 
   branchNick(branch) {
     return branch.replace('refs/heads/', '')
+      .replace('refs/tags/', '')
   }
 
   compareBranches(a, b) {

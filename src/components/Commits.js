@@ -4,6 +4,7 @@ import GitCommit from '../lib/git/GitCommit'
 import GitRepo from '../lib/git/GitRepo'
 import { Link } from 'react-router-dom'
 import Url from '../lib/Url'
+import GitTag from '../lib/git/GitTag'
 
 class Commits extends Component {
   constructor(props) {
@@ -46,17 +47,14 @@ class Commits extends Component {
     this.repoFetched = true
 
     // Get the repo
-    return GitRepo.fetch(repoCid, repo => {
+    return GitRepo.fetch(repoCid).then(repo => {
       this.setState({ repo })
       this.triggerCommitsFetch(branch, commitCid)
     })
   }
 
-  triggerCommitsFetch(branch, commitCid) {
-    const repo = this.state.repo
-    if (!repo) return
-
-    commitCid = commitCid || (repo.headCommit(branch) || {}).cid
+  async triggerCommitsFetch(branch, commitCid) {
+    commitCid = commitCid || await this.branchHead(branch)
     if (!commitCid) return
 
     // Check if we're already processing this commit
@@ -72,9 +70,16 @@ class Commits extends Component {
 
     // Fetch one extra row for pagination purposes
     const rowCount = this.rowCount + 1
-    this.currentCommit.fetch = GitCommit.fetchCommitAndParents(commitCid, rowCount, commits => {
+    this.currentCommit.fetch = GitCommit.fetchCommitAndParents(this.state.repo, commitCid, rowCount, commits => {
       this.setState({ commits })
     })
+  }
+
+  async branchHead(branch) {
+    let object = await this.state.repo.refCommit(branch)
+    if(object instanceof GitTag)
+      object = await object.taggedObject()
+    return object.cid
   }
 }
 
