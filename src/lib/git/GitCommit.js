@@ -14,12 +14,14 @@ class Fetcher {
 }
 
 class RecursiveCommitFetcher extends Fetcher {
-  constructor(repo, cid, countRequired, onUpdate) {
+  // Set countRequired to -1 to fetch the entire history
+  constructor(repo, cid, countRequired, onUpdate, onComplete) {
     super()
     this.repo = repo
     this.cid = cid
     this.countRequired = countRequired
     this.onUpdate = onUpdate
+    this.onComplete = onComplete
     this.count = 0
     this.fetched = {}
     this.queue = []
@@ -31,6 +33,11 @@ class RecursiveCommitFetcher extends Fetcher {
     return this.repo.getObject(this.cid).then(c => this.processCommit(c))
   }
 
+  complete() {
+    this.cancel()
+    this.onComplete && this.onComplete()
+  }
+
   async processCommit(commit) {
     if (!this.running) return
 
@@ -38,12 +45,10 @@ class RecursiveCommitFetcher extends Fetcher {
 
     // Update the list of fetched commits
     this.commits = this.commits.concat([commit])
-    this.onUpdate(this.commits.slice(0, this.countRequired))
+    this.onUpdate(this.countRequired === -1 ? this.commits : this.commits.slice(0, this.countRequired))
 
     // If we've collected enough commits, we're done
-    if (this.count >= this.countRequired) {
-      return
-    }
+    if (this.countRequired !== -1 && this.count >= this.countRequired) return this.complete()
 
     // Fetch the parents of the commit
     const parentCids = commit.parents.map(p => p.cid).filter(c => !this.fetched[c])
@@ -57,7 +62,7 @@ class RecursiveCommitFetcher extends Fetcher {
     })
 
     // If there are no more commits to fetch, we're done
-    if (!this.queue.length) return
+    if (!this.queue.length) return this.complete()
 
     // Process the newest commit
     const newest = this.queue.shift()
@@ -180,8 +185,8 @@ class GitCommit {
     return fetcher
   }
 
-  static fetchCommitAndParents(repo, cid, countRequired, onUpdate) {
-    const fetcher = new RecursiveCommitFetcher(repo, cid, countRequired, onUpdate)
+  static fetchCommitAndParents(repo, cid, countRequired, onUpdate, onComplete) {
+    const fetcher = new RecursiveCommitFetcher(repo, cid, countRequired, onUpdate, onComplete)
     fetcher.start()
     return fetcher
   }

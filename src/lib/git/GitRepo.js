@@ -35,7 +35,7 @@ class GitRepo {
     if (data.gitType === 'commit') {
       return new GitCommit(this, data, path)
     }
-    // If it has a gitType commit treat it as a tag
+    // If it has a gitType tag treat it as a tag
     if (data.gitType === 'tag') {
       return new GitTag(this, data, path)
     }
