@@ -22,7 +22,7 @@ class Commits extends IGComponent {
     // each will update the state, triggering a new render
     this.triggerPromises([
       [() => this.fetchRepo(url.repoCid), url.repoCid],
-      [() => this.fetchCommits(url.branch, url.commitCid), url.branch + '-' + url.commitCid]
+      [() => this.fetchCommits(url.branch, url.commitCid), url.branch + '-' + url.commitCid, false]
     ])
 
     // If there is another commit in the list, show the more link

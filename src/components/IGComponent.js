@@ -41,19 +41,24 @@ class PromiseMonitor {
       const promise = this.promises[i]
       const fn = promise[0]
       const key = promise[1]
-      if (key && (this.cache[i] || {}).key === key && this.cache[i].complete) {
+      const cacheable = promise[2] === undefined || promise[2] === true
+      if (cacheable && key && (this.cache[i] || {}).key === key && this.cache[i].complete) {
         return next(i + 1, this.cache[i].value)
       }
 
-      this.cache[i] = {
-        complete: false,
-        key
+      if (cacheable) {
+        this.cache[i] = {
+          complete: false,
+          key
+        }
       }
       fn(prevVal).then(val => {
         if (!this.running) return
 
-        this.cache[i].value = val
-        this.cache[i].complete = true
+        if (cacheable) {
+          this.cache[i].value = val
+          this.cache[i].complete = true
+        }
 
         return next(i + 1, val)
       })
