@@ -1,12 +1,13 @@
-import React, { Component } from 'react'
+import React from 'react'
 import CommitList from "./CommitList"
 import GitCommit from '../lib/git/GitCommit'
 import GitRepo from '../lib/git/GitRepo'
+import IGComponent from './IGComponent'
 import { Link } from 'react-router-dom'
 import Url from '../lib/Url'
 import GitTag from '../lib/git/GitTag'
 
-class Commits extends Component {
+class Commits extends IGComponent {
   constructor(props) {
     super(props)
     this.rowCount = 20
@@ -17,10 +18,12 @@ class Commits extends Component {
     const pathname = this.props.location.pathname
     const url = Url.parseCommitsPath(pathname)
 
-    // If we have not yet fetched the data for the commit list, continue with
-    // rendering but trigger a fetch in the background (which will
-    // call render again on completion)
-    this.triggerFetch(url.repoCid, url.branch, url.commitCid)
+    // Fetch the repo and the commit list. Note that
+    // each will update the state, triggering a new render
+    this.triggerPromises([
+      [() => this.fetchRepo(url.repoCid), url.repoCid],
+      [() => this.fetchCommits(url.branch, url.commitCid), url.branch + '-' + url.commitCid]
+    ])
 
     // If there is another commit in the list, show the more link
     let more = null
@@ -39,26 +42,14 @@ class Commits extends Component {
     )
   }
 
-  async triggerFetch(repoCid, branch, commitCid) {
-    if (this.repoFetched) {
-      this.triggerCommitsFetch(branch, commitCid)
-      return
-    }
-    this.repoFetched = true
-
-    // Get the repo
-    return GitRepo.fetch(repoCid).then(repo => {
-      this.setState({ repo })
-      this.triggerCommitsFetch(branch, commitCid)
-    })
+  async fetchRepo(repoCid) {
+    const repo = await GitRepo.fetch(repoCid)
+    this.setState({ repo })
   }
 
-  async triggerCommitsFetch(branch, commitCid) {
+  async fetchCommits(branch, commitCid) {
     commitCid = commitCid || await this.branchHead(branch)
     if (!commitCid) return
-
-    // Check if we're already processing this commit
-    if ((this.currentCommit || {}).cid === commitCid) return
 
     // If we were fetching another commit, cancel it
     if ((this.currentCommit || {}).fetch) {

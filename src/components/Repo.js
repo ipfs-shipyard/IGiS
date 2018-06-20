@@ -4,13 +4,14 @@ import GitBlob from '../lib/git/GitBlob'
 import GitRepo from '../lib/git/GitRepo'
 import GitTag from '../lib/git/GitTag'
 import GitTree from '../lib/git/GitTree'
-import React, { Component } from 'react'
+import IGComponent from './IGComponent'
+import React from 'react'
 import Readme from "./Readme"
 import RepoLinks from "./RepoLinks"
 import Tree from "./Tree"
 import Url from '../lib/Url'
 
-class Repo extends Component {
+class Repo extends IGComponent {
   constructor(props) {
     super(props)
     this.state = {}
@@ -20,10 +21,16 @@ class Repo extends Component {
     const pathname = this.props.location.pathname
     const url = Url.parseRepoPath(pathname)
 
-    // If we have not yet fetched the data for the repo, continue with
-    // rendering but trigger a fetch in the background (which will
-    // call render again on completion)
-    this.triggerFetch(url.repoCid, url.branch)
+    // Fetch the repo, the branch head, the commit and
+    // any associated README in consecutive calls. Note
+    // that each will update the state, triggering a new
+    // render
+    this.triggerPromises([
+      [() => this.fetchRepo(url.repoCid), url.repoCid],
+      [() => this.fetchBranchHead(url.branch), url.branch],
+      [commit => this.fetchPath(pathname, commit), pathname],
+      [() => this.fetchReadme(), pathname]
+    ])
 
     let content = null
     if (url.gitType === 'blob' && this.state.data instanceof GitBlob) {
@@ -47,49 +54,32 @@ class Repo extends Component {
     )
   }
 
-  async triggerFetch(repoCid, branch) {
-    if (this.repoFetched) {
-      this.triggerBranchFetch(branch)
-      return
-    }
-    this.repoFetched = true
-
-    // Get the repo
+  async fetchRepo(repoCid) {
     const repo = await GitRepo.fetch(repoCid)
     this.setState({ repo })
-    this.triggerBranchFetch(branch)
   }
 
-  async triggerBranchFetch(branch) {
-    const repo = this.state.repo
-    if (!repo) return
-
-    let object = await repo.refCommit(branch)
-    if(object instanceof GitTag)
+  async fetchBranchHead(branch) {
+    let object = await this.state.repo.refCommit(branch)
+    if(object instanceof GitTag) {
       object = await object.taggedObject()
-    this.triggerPathFetch(object)
+    }
+    return object
   }
 
-  // Get the blob or tree identified in the url
-  triggerPathFetch(commit) {
-    const pathname = this.props.location.pathname
-    if (this.pathFetched === pathname) return
-    this.pathFetched = pathname
-
+  async fetchPath(pathname, commit) {
     const url = Url.parseRepoPath(pathname)
     let dagPath = `${commit.cid}/tree`
     if (url.filePathParts.length) {
       dagPath += '/' + url.filePathParts.join('/hash/') + '/hash'
     }
-    this.state.repo.getObject(dagPath).then(data => {
-      this.setState({ data, commit })
-      this.triggerReadmeFetch()
-    })
+    const data = await this.state.repo.getObject(dagPath)
+    this.setState({ data, commit })
   }
 
   // If there's a README.md file in the tree,
   // fetch its contents and render
-  triggerReadmeFetch() {
+  async fetchReadme() {
     this.setState({ readme: null })
 
     const tree = this.state.data
@@ -98,7 +88,8 @@ class Repo extends Component {
     const readme = tree.files.find(f => f.name === 'README.md')
     if (!readme) return
 
-    readme.fetchContents().then(blob => this.setState({ readme: blob }))
+    const blob = await readme.fetchContents()
+    this.setState({ readme: blob })
   }
 }
 

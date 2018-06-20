@@ -1,11 +1,12 @@
-import React, { Component } from 'react'
+import React from 'react'
 import CommitList from "./CommitList"
 import GitCommit from '../lib/git/GitCommit'
 import GitRepo from '../lib/git/GitRepo'
+import IGComponent from './IGComponent'
 import Url from '../lib/Url'
 import GitTag from '../lib/git/GitTag'
 
-class Compare extends Component {
+class Compare extends IGComponent {
   constructor(props) {
     super(props)
     this.state = {
@@ -18,10 +19,12 @@ class Compare extends Component {
     const pathname = this.props.location.pathname
     const url = Url.parseComparePath(pathname)
 
-    // If we have not yet fetched the data for the commit list, continue with
-    // rendering but trigger a fetch in the background (which will
-    // call render again on completion)
-    this.triggerFetch(url.repoCid, url.branches)
+    // Fetch the repo and the commit list. Note that
+    // each will update the state, triggering a new render
+    this.triggerPromises([
+      [() => this.fetchRepo(url.repoCid), url.repoCid],
+      [() => this.fetchCommits(url.branches), url.branches.join('-')]
+    ])
 
     const prefix = this.state.completed && !this.state.commits.length ? 'Cannot compare' : 'Comparing'
     return (
@@ -37,25 +40,12 @@ class Compare extends Component {
     )
   }
 
-  async triggerFetch(repoCid, branches) {
-    if (this.repoFetched) {
-      this.triggerCommitsFetch(branches)
-      return
-    }
-    this.repoFetched = true
-
-    // Get the repo
+  async fetchRepo(repoCid) {
     const repo = await GitRepo.fetch(repoCid)
     this.setState({ repo })
-    this.triggerCommitsFetch(branches)
   }
 
-  async triggerCommitsFetch(branches) {
-    if (this.commitsFetched) {
-      return
-    }
-    this.commitsFetched = true
-
+  async fetchCommits(branches) {
     // Fetch the head commit on the base branch and the comparison branch
     const branchHeads = await Promise.all(branches.map(this.branchHead.bind(this)))
     if (branchHeads[0] === branchHeads[1]) {
