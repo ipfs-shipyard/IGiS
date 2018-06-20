@@ -13,7 +13,7 @@ class PromiseMonitor {
   // Compare the key of each promise being monitored
   // with the new promises to see if there's a difference
   sameAs(newPromises) {
-    if (this.promises.length != newPromises.length) return false
+    if (this.promises.length !== newPromises.length) return false
 
     for (let i = 0; i < newPromises.length; i++) {
       const promiseKey = this.promises[i][1]
@@ -42,7 +42,7 @@ class PromiseMonitor {
       const fn = promise[0]
       const key = promise[1]
       const cacheable = promise[2] === undefined || promise[2] === true
-      if (cacheable && key && (this.cache[i] || {}).key === key && this.cache[i].complete) {
+      if (cacheable && key && (this.cache[i] || {}).key === key && (this.cache[i] || {}).complete) {
         return next(i + 1, this.cache[i].value)
       }
 
@@ -68,10 +68,6 @@ class PromiseMonitor {
 }
 
 class IGComponent extends Component {
-  constructor(props) {
-    super(props)
-  }
-
   triggerPromises(promises) {
     // Ignore repeated calls with the same parameters
     if (this.runningPromises && this.runningPromises.sameAs(promises)) return
