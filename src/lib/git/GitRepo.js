@@ -21,25 +21,30 @@ class GitRepo {
     const branches = await this.branches
     const [ref] = ['heads', 'tags'].filter(b => branches['refs/' + b +'/' + branch])
     const branchPath = ref ? 'refs/' + ref + '/' + branch : this.defaultBranch
-
     return branches[branchPath]
   }
 
   async getObject(path) {
+    console.debug('Fetch', path)
     const data = (await window.ipfs.dag.get(path)).value
     // If this is a Uint8Array treat it as a Git blob
     if (data instanceof Uint8Array) {
+      console.debug('Got blob', path)
       return new GitBlob(data, path)
     }
     // If it has a gitType commit treat it as a commit
     if (data.gitType === 'commit') {
-      return new GitCommit(this, data, path)
+      const c = new GitCommit(this, data, path)
+      console.debug('Got commit', path, `'${c.summary}'`)
+      return c
     }
     // If it has a gitType tag treat it as a tag
     if (data.gitType === 'tag') {
+      console.debug('Got tag', path)
       return new GitTag(this, data, path)
     }
     // Otherwise assume git tree
+    console.debug('Got tree', path)
     return new GitTree(this, data, path)
   }
 
