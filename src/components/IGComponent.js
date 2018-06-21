@@ -39,8 +39,7 @@ class PromiseMonitor {
       if (i >= this.promises.length) return
 
       const promise = this.promises[i]
-      const fn = promise[0]
-      const key = promise[1]
+      const [fn, key] = promise
       const cacheable = promise[2] === undefined || promise[2] === true
       if (cacheable && key && (this.cache[i] || {}).key === key && (this.cache[i] || {}).complete) {
         return next(i + 1, this.cache[i].value)
@@ -52,7 +51,9 @@ class PromiseMonitor {
           key
         }
       }
-      fn(prevVal).then(val => {
+
+      const res = fn(prevVal)
+      const onComplete = val => {
         if (!this.running) return
 
         if (cacheable) {
@@ -61,13 +62,24 @@ class PromiseMonitor {
         }
 
         return next(i + 1, val)
-      })
+      }
+      if (res instanceof Promise) {
+        res.then(onComplete)
+      } else {
+        onComplete(res)
+      }
     }
     return next(0)
   }
 }
 
 class IGComponent extends Component {
+  // promises is an array of
+  // [<function returning a promise>, key, cacheable]
+  // On repeated calls to this function, if the same
+  // key is at the same index, the same result will be
+  // returned from an internal cache, unless cacheable
+  // is false
   triggerPromises(promises) {
     // Ignore repeated calls with the same parameters
     if (this.runningPromises && this.runningPromises.sameAs(promises)) return
