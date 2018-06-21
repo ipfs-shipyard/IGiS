@@ -9,7 +9,7 @@ class CommitDiffFile extends Component {
     const patch = require('diff').createPatch(c.name, str1, str0)
     return (
       <div className="CommitDiffFile">
-        <div>{c.name}</div>
+        <div>{c.path + '/' + c.name}</div>
         <Highlight className="diff">{patch}</Highlight>
       </div>
     )
