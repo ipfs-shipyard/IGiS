@@ -88,6 +88,10 @@ class IGComponent extends Component {
     this.runningPromises = new PromiseMonitor(promises, (this.runningPromises || {}).cache)
     this.runningPromises.run()
   }
+
+  componentWillUnmount() {
+    this.runningPromises && this.runningPromises.cancel()
+  }
 }
 
 export default IGComponent
