@@ -14,12 +14,14 @@ class Fetcher {
 }
 
 class RecursiveCommitFetcher extends Fetcher {
-  constructor(repo, cid, countRequired, onUpdate) {
+  // Set countRequired to -1 to fetch the entire history
+  constructor(repo, cid, countRequired, onUpdate, onComplete) {
     super()
     this.repo = repo
     this.cid = cid
     this.countRequired = countRequired
     this.onUpdate = onUpdate
+    this.onComplete = onComplete
     this.count = 0
     this.fetched = {}
     this.queue = []
@@ -31,6 +33,11 @@ class RecursiveCommitFetcher extends Fetcher {
     return this.repo.getObject(this.cid).then(c => this.processCommit(c))
   }
 
+  complete() {
+    this.cancel()
+    this.onComplete && this.onComplete()
+  }
+
   async processCommit(commit) {
     if (!this.running) return
 
@@ -38,12 +45,10 @@ class RecursiveCommitFetcher extends Fetcher {
 
     // Update the list of fetched commits
     this.commits = this.commits.concat([commit])
-    this.onUpdate(this.commits.slice(0, this.countRequired))
+    this.onUpdate(this.countRequired === -1 ? this.commits : this.commits.slice(0, this.countRequired))
 
     // If we've collected enough commits, we're done
-    if (this.count >= this.countRequired) {
-      return
-    }
+    if (this.countRequired !== -1 && this.count >= this.countRequired) return this.complete()
 
     // Fetch the parents of the commit
     const parentCids = commit.parents.map(p => p.cid).filter(c => !this.fetched[c])
@@ -57,7 +62,7 @@ class RecursiveCommitFetcher extends Fetcher {
     })
 
     // If there are no more commits to fetch, we're done
-    if (!this.queue.length) return
+    if (!this.queue.length) return this.complete()
 
     // Process the newest commit
     const newest = this.queue.shift()
@@ -66,20 +71,20 @@ class RecursiveCommitFetcher extends Fetcher {
 }
 
 class DiffFetcher extends Fetcher {
-  constructor(repo, cid, parents, onUpdate) {
+  constructor(repo, baseTree, compTree, onUpdate) {
     super()
     this.repo = repo
-    this.cid = cid
-    this.parents = parents
+    this.baseTree = baseTree
+    this.compTree = compTree
     this.onUpdate = onUpdate
     this.stateChanges = []
   }
 
   run() {
-    return this.fetchTrees(`${this.cid}/tree`, this.parents.length && `${this.cid}/parents/0/tree`)
+    return this.fetchTrees(this.baseTree, this.compTree)
   }
 
-  async fetchTrees(t1, t2) {
+  async fetchTrees(t1, t2, path) {
     if (!this.running) return
 
     const trees = await Promise.all([
@@ -93,7 +98,8 @@ class DiffFetcher extends Fetcher {
 
       // If the change is a directory, recursively drill down into the directory
       if (c.change[0] && c.change[0].isDir() && c.change[1] && c.change[1].isDir()) {
-        return this.fetchTrees(c.change[0].cid, c.change[1].cid)
+        const dirPath = (path ? path + '/' : '') + c.name
+        return this.fetchTrees(c.change[0].cid, c.change[1].cid, dirPath)
       }
 
       // Get the contents of the files
@@ -103,6 +109,7 @@ class DiffFetcher extends Fetcher {
       // the state so the diff is rendered, making sure to keep
       // files in lexicographical order
       this.stateChanges = this.stateChanges.concat({
+        path,
         name: c.name,
         change: files
       }).sort((a, b) => {
@@ -117,14 +124,14 @@ class DiffFetcher extends Fetcher {
     }))
   }
 
-  getChanges(head, parent) {
+  getChanges(base, comp) {
     function byName(a) {
       const o = {}
       a.forEach(i => o[i.name] = i)
       return o
     }
-    const headByName = byName(head.files)
-    const parentByName = byName((parent || {}).files || [])
+    const headByName = byName(base.files)
+    const parentByName = byName((comp || {}).files || [])
     const fileset = {}
     Object.keys(headByName).forEach(h => {
       fileset[h] = {
@@ -173,15 +180,24 @@ class GitCommit {
     this.parents = parents
   }
 
-  // Compare this commit's tree to its parent tree
-  fetchDiff(onUpdate) {
-    const fetcher = new DiffFetcher(this.repo, this.cid, this.parents, onUpdate)
+  // Compare this commit's tree to the given commit's tree
+  // If a comparison commit is not provided, compare this commit's
+  // tree to its parent's tree
+  async fetchDiff(onUpdate, compCommit) {
+    const baseTree = `${this.cid}/tree`
+    let compTree
+    if (compCommit) {
+      compTree = `${compCommit.cid}/tree`
+    } else {
+      compTree = this.parents.length && `${this.cid}/parents/0/tree`
+    }
+    const fetcher = new DiffFetcher(this.repo, baseTree, compTree, onUpdate)
     fetcher.start()
     return fetcher
   }
 
-  static fetchCommitAndParents(repo, cid, countRequired, onUpdate) {
-    const fetcher = new RecursiveCommitFetcher(repo, cid, countRequired, onUpdate)
+  static fetchCommitAndParents(repo, cid, countRequired, onUpdate, onComplete) {
+    const fetcher = new RecursiveCommitFetcher(repo, cid, countRequired, onUpdate, onComplete)
     fetcher.start()
     return fetcher
   }

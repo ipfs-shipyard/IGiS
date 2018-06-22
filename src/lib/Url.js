@@ -57,6 +57,21 @@ class Url {
       commitCid: parts[4]
     }
   }
+
+  static parseComparePath(url) {
+    // /repo/<cid>/compare/<branch>...<branch>
+    const parts = url.split('/')
+    if (parts[1] !== 'repo') return {}
+
+    const branches = (parts[4] || '').split('...')
+    if (branches.length !== 2) return {}
+
+    return {
+      parts: parts,
+      repoCid: parts[2],
+      branches: branches.map(decodeURIComponent)
+    }
+  }
 }
 
 export default Url

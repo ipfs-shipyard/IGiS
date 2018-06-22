@@ -16,7 +16,7 @@ class CommitDiffList extends Component {
 
   renderFiles(changes) {
     return changes.map(c => (
-      <CommitDiffFile key={c.name} change={c} />
+      <CommitDiffFile key={c.path + '/' + c.name} change={c} />
     ))
   }
 }

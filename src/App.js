@@ -4,6 +4,7 @@ import Home from './components/Home'
 import Repo from './components/Repo'
 import Commit from './components/Commit'
 import Commits from './components/Commits'
+import Compare from './components/Compare'
 import Panic from './components/Panic'
 import StatusBar from "./components/StatusBar";
 import NewRepo from "./components/NewRepo";
@@ -27,6 +28,7 @@ class App extends Component {
             <Route exact path="/new/repo" component={NewRepo}/>
             <Route path="/repo/:repoCid/commit/:commitCid" component={Commit}/>
             <Route path="/repo/:repoCid/commits/:branch" component={Commits}/>
+            <Route path="/repo/:repoCid/compare/:branch...:branch" component={Compare}/>
             <Route path="/repo/:repoCid" component={Repo}/>
           </Switch>
         </main>
