@@ -89,6 +89,10 @@ class IGComponent extends Component {
     this.runningPromises.run()
   }
 
+  componentWillUnmount() {
+    this.runningPromises && this.runningPromises.cancel()
+  }
+
   componentDidMount() {
     this.handlePathChange()
   }
