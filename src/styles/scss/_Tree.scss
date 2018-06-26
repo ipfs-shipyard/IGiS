@@ -13,4 +13,24 @@
     .file {
     	background: url(../../images/icons/file-text.svg) left no-repeat;
     }
+
+    .Loading {
+        .item {
+            padding: 0.4em 0;
+
+            .icon {
+                width: 1.5em;
+                background-color: #eee;
+                height: 1.5em;
+                display: inline-block;
+                margin-right: 0.8em;
+            }
+            .filename {
+                width: 5em;
+                background-color: #eee;
+                height: 1.5em;
+                display: inline-block;
+            }
+        }
+    }
 }
