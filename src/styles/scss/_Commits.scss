@@ -4,4 +4,25 @@
         text-align: center;
         font-size: 0.9em;
     }
+
+    .Loading {
+        .item {
+		    padding: 0.5em 0.5em 0 0.5em;
+        }
+
+        .item > div {
+            background-color: #eee;
+            height: 1.2em;
+            display: inline-block;
+        }
+        .item > div:first-child {
+            margin-right: 2em;
+        }
+        .item > div:last-child {
+            float: right;
+        }
+    }
+    .Loading.no-commits {
+    	padding-top: 0.5em;
+    }
 }

@@ -29,15 +29,14 @@ class Commits extends IGComponent {
     let more = null
     if (this.state.commits.length > this.rowCount) {
       const nextCommit = this.state.commits[this.rowCount]
-      more = <Link to={`${url.basePath}/${nextCommit.cid}`}>More ▾</Link>
+      more = <div className="more-link"><Link to={`${url.basePath}/${nextCommit.cid}`}>More ▾</Link></div>
     }
 
     return (
       <div className="Commits">
         <CommitList repoCid={url.repoCid} commits={this.state.commits.slice(0, this.rowCount)} />
-        <div className="more-link">
-          {more}
-        </div>
+        {more}
+        {this.renderLoading()}
       </div>
     )
   }
@@ -63,7 +62,7 @@ class Commits extends IGComponent {
     const rowCount = this.rowCount + 1
     this.currentCommit.fetch = GitCommit.fetchCommitAndParents(this.state.repo, commitCid, rowCount, commits => {
       this.setState({ commits })
-    })
+    }, () => this.setState({ complete: true }))
   }
 
   async branchHead(branch) {
@@ -71,6 +70,26 @@ class Commits extends IGComponent {
     if(object instanceof GitTag)
       object = await object.taggedObject()
     return object.cid
+  }
+
+  renderLoading() {
+    if (this.state.complete) return null
+
+    this.loadingLengths = this.loadingLengths || [...Array(this.rowCount)].map(() => [
+      7.4, 15 + Math.random() * 10, 4 + Math.random() * 2
+    ])
+    const lengths = this.loadingLengths.slice(this.state.commits.length)
+    return (
+      <div className={ "Loading" + (this.state.commits.length ? '' : ' no-commits') }>
+        {lengths.map((item, i) => (
+          <div className="item" key={i}>
+            {item.map((l, j) => (
+              <div key={j} style={{width: l + 'em'}} />
+            ))}
+          </div>
+        ))}
+      </div>
+    )
   }
 }
 
