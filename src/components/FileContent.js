@@ -7,6 +7,14 @@ class FileContent extends LoadingComponent {
     return !!this.props.content
   }
 
+  Element(props) {
+    return (
+      <div className="FileContent">
+        {props.children}
+      </div>
+    )
+  }
+
   renderContent() {
     let lines = this.props.content.toString().split('\n')
     if (lines[lines.length - 1] === '') {
@@ -14,7 +22,7 @@ class FileContent extends LoadingComponent {
     }
     const ext = (this.props.path.match(/.*\.(.*)/) || [])[1]
     return (
-      <div className="FileContent">{this.renderLines(lines, ext)}</div>
+      <this.Element>{this.renderLines(lines, ext)}</this.Element>
     )
   }
 
@@ -39,7 +47,7 @@ class FileContent extends LoadingComponent {
   renderLoading() {
     const lengths = [...Array(Math.floor(15 + Math.random() * 10))].map(() => 10 + Math.random() * 50)
     return (
-      <div className="FileContent">
+      <this.Element>
         <div className="Loading">
           {lengths.map((l, i) => (
             <div className="item" key={i}>
@@ -48,7 +56,7 @@ class FileContent extends LoadingComponent {
             </div>
           ))}
         </div>
-      </div>
+      </this.Element>
     )
   }
 }

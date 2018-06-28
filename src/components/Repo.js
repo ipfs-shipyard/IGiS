@@ -68,6 +68,7 @@ class Repo extends IGComponent {
     if(object instanceof GitTag) {
       object = await object.taggedObject()
     }
+    this.setState({ commit: object })
     return object
   }
 
@@ -78,7 +79,7 @@ class Repo extends IGComponent {
       dagPath += '/' + url.filePathParts.join('/hash/') + '/hash'
     }
     const data = await this.state.repo.getObject(dagPath)
-    this.setState({ data, commit })
+    this.setState({ data })
   }
 
   // If there's a README.md file in the tree,

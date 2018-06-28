@@ -8,4 +8,20 @@
     .ZipButton {
         margin: 0 0.5rem 0 0;
     }
+
+    .Loading {
+	    padding: 0.5em 0;
+        .item {
+            width: 5em;
+            background-color: #eee;
+            height: 1.5em;
+            display: inline-block;
+        }
+        .item:first-child {
+            margin-right: 0.5em;
+        }
+        .item:last-child {
+            float: right;
+        }
+    }
 }

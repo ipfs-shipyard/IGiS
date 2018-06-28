@@ -2,24 +2,24 @@ import React from 'react'
 import TreeItem from './TreeItem'
 import LoadingComponent from './LoadingComponent'
 
-function TreeContent(props) {
-  return (
-    <div className="Tree">
-      {props.children}
-    </div>
-  )
-}
-
 class Tree extends LoadingComponent {
   isDataReady(props, state) {
     return !!(props.tree || {}).files
   }
 
+  Element(props) {
+    return (
+      <div className="Tree">
+        {props.children}
+      </div>
+    )
+  }
+
   renderContent() {
     return (
-      <TreeContent>
+      <this.Element>
         {this.renderFiles(this.props.tree.files)}
-      </TreeContent>
+      </this.Element>
     )
   }
 
@@ -46,7 +46,7 @@ class Tree extends LoadingComponent {
   renderLoading() {
     const lengths = [...Array(Math.floor(3 + Math.random() * 3))].map(() => 2 + Math.random() * 10)
     return (
-      <TreeContent>
+      <this.Element>
         <div className="Loading">
           {lengths.map((l, i) => (
             <div className="item" key={i}>
@@ -55,7 +55,7 @@ class Tree extends LoadingComponent {
             </div>
           ))}
         </div>
-      </TreeContent>
+      </this.Element>
     )
   }
 }

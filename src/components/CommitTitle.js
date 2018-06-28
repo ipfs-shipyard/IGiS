@@ -1,12 +1,23 @@
-import React, { Component } from 'react'
+import React from 'react'
+import LoadingComponent from './LoadingComponent'
 
-class CommitTitle extends Component {
-  render() {
-    const commit = this.props.commit
-    if (!commit) return null
+class CommitTitle extends LoadingComponent {
+  isDataReady(props, state) {
+    return !!props.commit
+  }
 
+  Element(props) {
     return (
       <div className="CommitTitle">
+        {props.children}
+      </div>
+    )
+  }
+
+  renderContent() {
+    const commit = this.props.commit
+    return (
+      <this.Element>
         <div className="author">
           <span>{(commit.author || {}).name}</span>:
         </div>
@@ -16,7 +27,20 @@ class CommitTitle extends Component {
         <div className="at">
           {commit.author.moment.fromNow()}
         </div>
-      </div>
+      </this.Element>
+    )
+  }
+
+  renderLoading() {
+    const lengths = [5 + Math.random() * 4, 20 + Math.random() * 10, 5 + Math.random() * 2]
+    return (
+      <this.Element>
+        <div className="Loading">
+          {lengths.map((l, i) => (
+            <div className="item" key={i} style={{width: l + 'em'}} />
+          ))}
+        </div>
+      </this.Element>
     )
   }
 }
