@@ -62,7 +62,7 @@ class Commits extends IGComponent {
     const rowCount = this.rowCount + 1
     this.currentCommit.fetch = GitCommit.fetchCommitAndParents(this.state.repo, commitCid, rowCount, commits => {
       this.setState({ commits })
-    }, () => this.setState({ complete: true }))
+    }, () => this.setState({ complete: commitCid }))
   }
 
   async branchHead(branch) {
@@ -73,7 +73,7 @@ class Commits extends IGComponent {
   }
 
   renderLoading() {
-    if (this.state.complete) return null
+    if (this.state.complete === (this.currentCommit || {}).cid) return null
 
     this.loadingLengths = this.loadingLengths || [...Array(this.rowCount)].map(() => [
       7.4, 15 + Math.random() * 10, 4 + Math.random() * 2
@@ -88,6 +88,9 @@ class Commits extends IGComponent {
             ))}
           </div>
         ))}
+        <div className="more-link" key={lengths.length}>
+          <div />
+        </div>
       </div>
     )
   }

@@ -21,6 +21,12 @@
         .item > div:last-child {
             float: right;
         }
+        .more-link > div {
+        	width: 3em;
+            background-color: #eee;
+            height: 1.2em;
+            display: inline-block;
+        }
     }
     .Loading.no-commits {
     	padding-top: 0.5em;
