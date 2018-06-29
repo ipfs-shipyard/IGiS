@@ -15,4 +15,19 @@
     	display: inline-block;
 		float: right;
     }
+
+    .Loading {
+        .item {
+            width: 5em;
+            background-color: #eee;
+            height: 1.5em;
+            display: inline-block;
+        }
+        .item:first-child {
+            margin-right: 0.5em;
+        }
+        .item:last-child {
+            float: right;
+        }
+    }
 }

@@ -42,7 +42,7 @@ class PromiseMonitor {
       const [fn, key] = promise
       const cacheable = promise[2] === undefined || promise[2] === true
       if (cacheable && key && (this.cache[i] || {}).key === key && (this.cache[i] || {}).complete) {
-        return next(i + 1, this.cache[i].value)
+        return setTimeout(() => next(i + 1, this.cache[i].value), 0)
       }
 
       if (cacheable) {
@@ -66,7 +66,7 @@ class PromiseMonitor {
       if (res instanceof Promise) {
         res.then(onComplete)
       } else {
-        onComplete(res)
+        setTimeout(() => onComplete(res), 0)
       }
     }
     return next(0)
@@ -91,6 +91,28 @@ class IGComponent extends Component {
 
   componentWillUnmount() {
     this.runningPromises && this.runningPromises.cancel()
+  }
+
+  componentDidMount() {
+    this.handlePathChange()
+  }
+
+  componentDidUpdate() {
+    this.handlePathChange()
+  }
+
+  handlePathChange() {
+    if (!(this.props || {}).location) return
+
+    const urlPath = this.props.location.pathname
+    if (this.urlPath !== urlPath) {
+      this.pathDidChange(urlPath)
+    }
+    this.urlPath = urlPath
+  }
+
+  // Override in subclass
+  pathDidChange(urlPath) {
   }
 }
 

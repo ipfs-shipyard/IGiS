@@ -5,4 +5,14 @@
         border-top: 1px solid #d1d1d1;
     	font-size: 0.9em
     }
+
+    .Loading {
+        .item {
+        	margin: 0.5em 0;
+            padding: 0.4em 0;
+		    width: 5em;
+	        background-color: #eee;
+	        height: 1.5em;
+        }
+    }
 }

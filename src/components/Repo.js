@@ -1,6 +1,5 @@
 import CommitTitle from "./CommitTitle"
 import FileContent from "./FileContent"
-import GitBlob from '../lib/git/GitBlob'
 import GitRepo from '../lib/git/GitRepo'
 import GitTag from '../lib/git/GitTag'
 import GitTree from '../lib/git/GitTree'
@@ -17,25 +16,30 @@ class Repo extends IGComponent {
     this.state = {}
   }
 
-  render() {
-    const pathname = this.props.location.pathname
-    const url = Url.parseRepoPath(pathname)
+  pathDidChange(urlPath) {
+    this.setState({ data: null, readme: null })
 
     // Fetch the repo, the branch head, the commit and
     // any associated README in consecutive calls. Note
     // that each will update the state, triggering a new
     // render
+    const url = Url.parseRepoPath(urlPath)
     this.triggerPromises([
       [() => this.fetchRepo(url.repoCid), url.repoCid],
       [() => this.fetchBranchHead(url.branch), url.branch],
-      [commit => this.fetchPath(pathname, commit), pathname],
-      [() => this.fetchReadme(), pathname]
+      [commit => this.fetchPath(this.urlPath, commit), urlPath],
+      [() => this.fetchReadme(), urlPath]
     ])
+  }
 
-    let content = null
-    if (url.gitType === 'blob' && this.state.data instanceof GitBlob) {
+  render() {
+    const pathname = this.props.location.pathname
+    const url = Url.parseRepoPath(pathname)
+
+    let content
+    if (url.gitType === 'blob') {
       content = <FileContent content={this.state.data} path={pathname} />
-    } else if (this.state.data instanceof GitTree) {
+    } else {
       content = (
         <div>
           <Tree repo={this.state.repo} tree={this.state.data} />
@@ -64,6 +68,7 @@ class Repo extends IGComponent {
     if(object instanceof GitTag) {
       object = await object.taggedObject()
     }
+    this.setState({ commit: object })
     return object
   }
 
@@ -74,14 +79,12 @@ class Repo extends IGComponent {
       dagPath += '/' + url.filePathParts.join('/hash/') + '/hash'
     }
     const data = await this.state.repo.getObject(dagPath)
-    this.setState({ data, commit })
+    this.setState({ data })
   }
 
   // If there's a README.md file in the tree,
   // fetch its contents and render
   async fetchReadme() {
-    this.setState({ readme: null })
-
     const tree = this.state.data
     if (!tree || !(tree instanceof GitTree)) return
 
