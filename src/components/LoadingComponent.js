@@ -2,7 +2,7 @@ import { Component } from 'react'
 
 class LoadingComponent extends Component {
   render() {
-    const dataReady = this.isDataReady(this.props, this.state)
+    const dataReady = this.isDataReady(this.props || {}, this.state || {})
     const loading = dataReady ? 'COMPLETE' : this.loading === 'LOADING' && 'LOADING'
 
     if (loading === 'COMPLETE') {

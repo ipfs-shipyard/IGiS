@@ -36,7 +36,8 @@ class Commits extends Component {
     const commit = await repo.getObject(url.commitCid)
     this.setState({ commit })
 
-    commit.fetchDiff(changes => this.setState(changes))
+    const changes = await commit.fetchDiff()
+    this.setState({ changes })
   }
 }
 

@@ -6,22 +6,28 @@ const COMMIT_SUMMARY_LEN = 80
 class Fetcher {
   start() {
     this.running = true
-    return this.run().then(() => this.running = false)
+    this.promise = this.run().then(res => {
+      this.running = false
+      return res
+    })
+    return this.promise
   }
   cancel() {
     this.running = false
+  }
+  then(fn) {
+    this.promise.then(fn)
   }
 }
 
 class RecursiveCommitFetcher extends Fetcher {
   // Set countRequired to -1 to fetch the entire history
-  constructor(repo, cid, countRequired, onUpdate, onComplete) {
+  constructor(repo, cid, countRequired, onUpdate) {
     super()
     this.repo = repo
     this.cid = cid
     this.countRequired = countRequired
     this.onUpdate = onUpdate
-    this.onComplete = onComplete
     this.count = 0
     this.fetched = {}
     this.queue = []
@@ -30,12 +36,7 @@ class RecursiveCommitFetcher extends Fetcher {
 
   run() {
     this.fetched[this.cid] = true
-    return this.repo.getObject(this.cid).then(c => this.processCommit(c))
-  }
-
-  complete() {
-    this.cancel()
-    this.onComplete && this.onComplete()
+    return this.repo.getObject(this.cid).then(c => this.processCommit(c)).then(() => this.commits)
   }
 
   async processCommit(commit) {
@@ -45,10 +46,10 @@ class RecursiveCommitFetcher extends Fetcher {
 
     // Update the list of fetched commits
     this.commits = this.commits.concat([commit])
-    this.onUpdate(this.countRequired === -1 ? this.commits : this.commits.slice(0, this.countRequired))
+    this.onUpdate && this.onUpdate(this.countRequired === -1 ? this.commits : this.commits.slice(0, this.countRequired))
 
     // If we've collected enough commits, we're done
-    if (this.countRequired !== -1 && this.count >= this.countRequired) return this.complete()
+    if (this.countRequired !== -1 && this.count >= this.countRequired) return this.cancel()
 
     // Fetch the parents of the commit
     const parentCids = commit.parents.map(p => p.cid).filter(c => !this.fetched[c])
@@ -62,7 +63,7 @@ class RecursiveCommitFetcher extends Fetcher {
     })
 
     // If there are no more commits to fetch, we're done
-    if (!this.queue.length) return this.complete()
+    if (!this.queue.length) return this.cancel()
 
     // Process the newest commit
     const newest = this.queue.shift()
@@ -81,7 +82,7 @@ class DiffFetcher extends Fetcher {
   }
 
   run() {
-    return this.fetchTrees(this.baseTree, this.compTree)
+    return this.fetchTrees(this.baseTree, this.compTree).then(() => this.stateChanges)
   }
 
   async fetchTrees(t1, t2, path) {
@@ -102,25 +103,25 @@ class DiffFetcher extends Fetcher {
         return this.fetchTrees(c.change[0].cid, c.change[1].cid, dirPath)
       }
 
-      // Get the contents of the files
-      const files = await Promise.all(c.change.map(f => f && f.fetchContents()))
-
       // As we retrieve the contents for each change, update
       // the state so the diff is rendered, making sure to keep
-      // files in lexicographical order
+      // files in lexicographical order.
+      // Note that we don't wait for the contents to load, we just
+      // set the change field to be a Promise with the file contents
+      const files = Promise.all(c.change.map(f => f && f.fetchContents()))
       this.stateChanges = this.stateChanges.concat({
-        path,
+        path: (path ? path + '/' : '' ) + c.name,
         name: c.name,
         change: files
       }).sort((a, b) => {
-        if (a.name < b.name) return -1
-        if (a.name > b.name) return 1
+        if (a.path < b.path) return -1
+        if (a.path > b.path) return 1
         return 0
       })
 
       if (!this.running) return
 
-      this.onUpdate({ changes: this.stateChanges })
+      this.onUpdate && this.onUpdate({ changes: this.stateChanges })
     }))
   }
 
@@ -196,8 +197,8 @@ class GitCommit {
     return fetcher
   }
 
-  static fetchCommitAndParents(repo, cid, countRequired, onUpdate, onComplete) {
-    const fetcher = new RecursiveCommitFetcher(repo, cid, countRequired, onUpdate, onComplete)
+  static fetchCommitAndParents(repo, cid, countRequired, onUpdate) {
+    const fetcher = new RecursiveCommitFetcher(repo, cid, countRequired, onUpdate)
     fetcher.start()
     return fetcher
   }

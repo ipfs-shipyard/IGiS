@@ -62,7 +62,7 @@ class Commits extends IGComponent {
     const rowCount = this.rowCount + 1
     this.currentCommit.fetch = GitCommit.fetchCommitAndParents(this.state.repo, commitCid, rowCount, commits => {
       this.setState({ commits })
-    }, () => this.setState({ complete: commitCid }))
+    }).then(() => this.setState({ complete: commitCid }))
   }
 
   async branchHead(branch) {
