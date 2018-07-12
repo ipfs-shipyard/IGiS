@@ -7,10 +7,12 @@ import { Link } from 'react-router-dom'
 class BranchSelector extends Component {
   constructor(props) {
     super(props)
-    this.state = {show: ''}
+    this.state = {show: this.props.expanded || ''}
+    this.getBranchHref = this.props.getBranchHref || (b => Url.toBranch(this.props.repo, b))
 
     this.switchType = this.switchType.bind(this)
     this.toggleSelector = this.toggleSelector.bind(this)
+    this.onClickOutside = this.onClickOutside.bind(this)
   }
 
   render() {
@@ -18,9 +20,11 @@ class BranchSelector extends Component {
 
     return (
       <div className="BranchSelector-out">
-        <ClickOutside onClickOutside={this.switchType('')}>
+        <ClickOutside onClickOutside={this.onClickOutside}>
           <div className="BranchSelector">
-            <div className="branchButton" onClick={this.toggleSelector}>Branch: <span>{this.props.branch}</span></div>
+            <div className="branchButton" onClick={this.toggleSelector}>
+              {this.props.label || 'Branch'}: <span>{this.props.branch}</span>
+            </div>
             {this.renderDropdown()}
           </div>
         </ClickOutside>
@@ -30,6 +34,11 @@ class BranchSelector extends Component {
 
   toggleSelector() {
     this.setState({show: this.state.show === '' ? 'heads' : ''})
+  }
+
+  onClickOutside() {
+    this.switchType('')()
+    this.props.onClose && this.props.onClose()
   }
 
   switchType(type) {
@@ -43,8 +52,8 @@ class BranchSelector extends Component {
       <div className="branchDropdown bg-white ba">
         <div>
           <div className="bb pa1 refType">
-            {this.renderButton('heads', 'Branches')}
-            {this.renderButton('tags', 'Tags')}
+            {(!this.props.type || this.props.type === 'heads') && this.renderButton('heads', 'Branches')}
+            {(!this.props.type || this.props.type === 'tags') && this.renderButton('tags', 'Tags')}
           </div>
         </div>
         <div className="branchList pa1">
@@ -63,7 +72,7 @@ class BranchSelector extends Component {
       return Object.keys(branches).filter(b => b.startsWith('refs/' + type + '/'))
         .sort((a, b) => this.compareBranches(a, b))
         .map(this.branchNick).map(b =>
-        <div key={b}><Link to={Url.toBranch(this.props.repo, b)} onClick={this.switchType('')}>{b}</Link></div>
+        <div key={b}><Link to={this.getBranchHref(b)} onClick={this.switchType('')}>{b}</Link></div>
       )
     }
 

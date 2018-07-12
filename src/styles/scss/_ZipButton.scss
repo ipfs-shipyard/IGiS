@@ -1,0 +1,12 @@
+.ZipButton {
+    position: relative;
+
+    .processing {
+	    position: absolute;
+	    color: #999;
+	    top: 2rem;
+	    overflow: hidden;
+	    white-space: nowrap;
+	    font-size: 0.8em;
+    }
+}
