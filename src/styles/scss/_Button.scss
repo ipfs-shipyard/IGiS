@@ -1,0 +1,15 @@
+.Button {
+    padding: 0.25em 0.5em;
+    cursor: pointer;
+    border: 1px solid #aaa;
+    border-radius: 0.2em;
+    color: #777;
+}
+.Button:hover {
+	color: inherit;
+    border: 1px solid #999;
+}
+.Button.link-parent {
+	color: #9b4dca;
+	border-color: #9b4dca;
+}

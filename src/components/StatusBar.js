@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
+import Button from './Button'
 
 class StatusBar extends Component {
   render() {
@@ -10,7 +11,9 @@ class StatusBar extends Component {
         </div>
         <div className="menu">
           <Link to="/repo/QmViWi5az9iiPzESM6ruHf84TcmHSAVQ2KQdNveoDH7eaY">Demo Repository</Link>
-          <Link to="/new/repo">New Repository</Link>
+          <Button>
+            <Link to="/new/repo">New Repository</Link>
+          </Button>
         </div>
       </div>
     );

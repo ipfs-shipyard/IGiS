@@ -58,6 +58,10 @@ class Url {
     }
   }
 
+  static toBranchCompare(repo, base, compare) {
+    return `/repo/${repo.cid}/compare/${encodeURIComponent(base)}...${encodeURIComponent(compare)}`
+  }
+
   static parseComparePath(url) {
     // /repo/<cid>/compare/<branch>...<branch>
     const parts = url.split('/')

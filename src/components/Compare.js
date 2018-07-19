@@ -28,7 +28,8 @@ class Compare extends IGComponent {
       [() => this.fetchDiff(), url.branches.join('-')]
     ])
 
-    const prefix = this.state.commitsFetchComplete && !this.state.commits.length ? 'Cannot compare' : 'Comparing'
+    const cannotCompare = this.state.commitsFetchComplete && !this.state.commits.length
+    const prefix = cannotCompare ? 'Cannot compare' : 'Comparing'
     return (
       <div className="Compare">
         <p>
@@ -38,9 +39,9 @@ class Compare extends IGComponent {
         { this.state.commits.length > 0 ? (
           <CommitList repoCid={url.repoCid} commits={this.state.commits} />
         ) : (
-          this.renderLoadingCommitList()
+          cannotCompare ? null : this.renderLoadingCommitList()
         )}
-        <CommitDiffList changes={this.state.changes} />
+        { !cannotCompare && <CommitDiffList changes={this.state.changes} /> }
       </div>
     )
   }
@@ -141,7 +142,7 @@ class Compare extends IGComponent {
     // Wait till all changes have been fetched then render the results
     // (rather than rendering them as they come in, which causes the page
     // to jump around)
-    return this.state.commits[0].fetchDiff(null, this.state.intersectCommit).then(async changes => {
+    return this.state.commits[0] && this.state.commits[0].fetchDiff(null, this.state.intersectCommit).then(changes => {
       this.setState({ changes })
     })
   }
