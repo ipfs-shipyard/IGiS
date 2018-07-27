@@ -1,14 +1,19 @@
 @import "../../../node_modules/tachyons-sass/tachyons.scss";
 @import "../../../node_modules/ipfs-css/ipfs.css";
 @import "../../../node_modules/highlight.js/styles/default.css";
+@import "../../../node_modules/react-tabs/style/react-tabs.scss";
+@import "./react-tabs";
 
 @import "App";
+@import "Avatar";
 @import "BranchSelector";
 @import "BreadCrumb";
 @import "Button";
+@import "Comment";
 @import "Commits";
 @import "CommitDiffFile";
 @import "CommitDiffList";
+@import "CommitList";
 @import "CommitListItem";
 @import "CommitTitle";
 @import "Compare";
@@ -16,10 +21,12 @@
 @import "Home";
 @import "Menu";
 @import "MenuEntry";
+@import "PullRequest";
 @import "Readme";
 @import "Repo";
 @import "RepoLinks";
 @import "StatusBar";
 @import "Tree";
+@import "Username";
 @import "WithMenu";
 @import "ZipButton";

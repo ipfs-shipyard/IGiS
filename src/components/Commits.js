@@ -5,7 +5,6 @@ import GitRepo from '../lib/git/GitRepo'
 import IGComponent from './IGComponent'
 import { Link } from 'react-router-dom'
 import Url from '../lib/Url'
-import GitTag from '../lib/git/GitTag'
 
 class Commits extends IGComponent {
   constructor(props) {
@@ -47,7 +46,7 @@ class Commits extends IGComponent {
   }
 
   async fetchCommits(branch, commitCid) {
-    commitCid = commitCid || await this.branchHead(branch)
+    commitCid = commitCid || await this.state.repo.refHead(branch)
     if (!commitCid) return
 
     // If we were fetching another commit, cancel it
@@ -63,13 +62,6 @@ class Commits extends IGComponent {
     this.currentCommit.fetch = GitCommit.fetchCommitAndParents(this.state.repo, commitCid, rowCount, commits => {
       this.setState({ commits })
     }).then(() => this.setState({ complete: commitCid }))
-  }
-
-  async branchHead(branch) {
-    let object = await this.state.repo.refCommit(branch)
-    if(object instanceof GitTag)
-      object = await object.taggedObject()
-    return object.cid
   }
 
   renderLoading() {

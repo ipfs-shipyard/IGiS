@@ -1,5 +1,6 @@
 import Async from 'react-promise'
 import React, { Component } from 'react'
+import Ref from '../lib/git/util/Ref'
 import ClickOutside from 'react-click-outside'
 import Url from '../lib/Url'
 import { Link } from 'react-router-dom'
@@ -57,7 +58,7 @@ class BranchSelector extends Component {
           </div>
         </div>
         <div className="branchList pa1">
-          <Async promise={this.props.repo.branches} then={branches => this.renderOptions(branches)} />
+          <Async promise={this.props.repo.refs} then={branches => this.renderOptions(branches)} />
         </div>
       </div>
     )
@@ -71,7 +72,7 @@ class BranchSelector extends Component {
     const renderType = (type) => {
       return Object.keys(branches).filter(b => b.startsWith('refs/' + type + '/'))
         .sort((a, b) => this.compareBranches(a, b))
-        .map(this.branchNick).map(b =>
+        .map(Ref.refNick).map(b =>
         <div key={b}><Link to={this.getBranchHref(b)} onClick={this.switchType('')}>{b}</Link></div>
       )
     }
@@ -82,11 +83,6 @@ class BranchSelector extends Component {
       case 'tags':
         return renderType('tags')
     }
-  }
-
-  branchNick(branch) {
-    return branch.replace('refs/heads/', '')
-      .replace('refs/tags/', '')
   }
 
   compareBranches(a, b) {

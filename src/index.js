@@ -5,7 +5,11 @@ import App from './App';
 import Ipfs from 'ipfs';
 import './styles/css/main.css';
 
-window.ipfs = new Ipfs()
+window.ipfs = new Ipfs({
+  EXPERIMENTAL: {
+    pubsub: true
+  }
+})
 window.ipfs.on('ready', async () => {
   try {
     await window.ipfs.swarm.connect("/dns4/ipfs.devtty.eu/wss/ipfs/QmVGX47BzePPqEzpkTwfUJogPZxHcifpSXsGdgyHjtk5t7")

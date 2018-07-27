@@ -1,0 +1,15 @@
+.Avatar {
+    display: inline-block;
+    width: 3em;
+    height: 3em;
+    background-size: contain;
+    vertical-align: top;
+    margin-right: 1em;
+
+    .Loading {
+        width: 3em;
+        height: 3em;
+        background-color: #eee;
+        border-radius: 1.5em;
+    }
+}

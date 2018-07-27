@@ -6,6 +6,7 @@ import GitTree from '../lib/git/GitTree'
 import IGComponent from './IGComponent'
 import React from 'react'
 import Readme from "./Readme"
+import Ref from '../lib/git/util/Ref'
 import RepoLinks from "./RepoLinks"
 import Tree from "./Tree"
 import Url from '../lib/Url'
@@ -48,7 +49,7 @@ class Repo extends IGComponent {
       )
     }
 
-    const defaultBranch = url.branch || GitRepo.branchNick((this.state.repo || {}).defaultBranch)
+    const defaultBranch = url.branch || Ref.refNick((this.state.repo || {}).defaultBranch)
     return (
       <div className="Repo">
         <RepoLinks repo={this.state.repo} url={url} branch={defaultBranch} />
