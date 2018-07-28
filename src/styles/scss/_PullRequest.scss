@@ -1,6 +1,13 @@
 .PullRequest {
     p {
         padding: 0.5em;
+
+        .Loading {
+            background-color: #eee;
+            height: 1.2em;
+            width: 30em;
+            display: inline-block;
+        }
     }
     .Tabs {
     	margin-top: 1em;

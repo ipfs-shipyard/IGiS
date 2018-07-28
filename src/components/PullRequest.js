@@ -2,12 +2,11 @@ import React, { Component } from 'react'
 import CommentList from './CommentList'
 import CommitList from './CommitList'
 import CommitDiffList from './CommitDiffList'
-import GitCommit from '../lib/git/GitCommit'
 import GitRepo from '../lib/git/GitRepo'
-import GitTag from '../lib/git/GitTag'
+import Ref from '../lib/git/util/Ref'
+import { RepoCrdt } from '../lib/crdt/CRDT'
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs'
 import Url from '../lib/Url'
-import { Repo as RepoCrdt } from '../lib/crdt/CRDT'
 
 class PullRequest extends Component {
   constructor(props) {
@@ -16,10 +15,10 @@ class PullRequest extends Component {
       commitsFetchComplete: false,
       commits: []
     }
-    // TODO: Get these from a PR object
-    this.branches = ['master', 'feat/coreapi/swarm']
     const pathname = this.props.location.pathname
-    this.url = Url.parsePullRequestPath(pathname)
+    const url = Url.parsePullRequestPath(pathname)
+    this.repoCid = url.repoCid
+    this.pullCid = url.pullCid
   }
 
   componentDidMount() {
@@ -27,27 +26,43 @@ class PullRequest extends Component {
   }
 
   async triggerFetch() {
-    await this.fetchRepo(this.url.repoCid)
+    await Promise.all([
+      this.fetchRepo(this.repoCid),
+      this.fetchPullRequest(this.pullCid)
+    ])
     await Promise.all([
       (async () => {
-        await this.fetchComments(this.url.repoCid, this.url.pullCid)
-        await this.fetchCommentAuthors(this.url.repoCid, this.url.pullCid)
+        await this.fetchComments(this.repoCid, this.pullCid)
+        await this.fetchCommentAuthors(this.repoCid, this.pullCid)
       })(),
       (async () => {
-        await this.fetchCommits(this.branches)
+        await this.fetchCommits()
         await this.fetchDiff()
       })()
     ])
   }
 
+  getBranches() {
+    if (!this.state.pr) return
+
+    return [this.state.pr.base.ref, this.state.pr.compare.ref].map(Ref.refNick)
+  }
+
   render() {
+    const branches = this.getBranches()
     const cannotCompare = this.state.commitsFetchComplete && !this.state.commits.length
     const prefix = cannotCompare ? 'Cannot compare' : 'Comparing'
     return (
       <div className="PullRequest">
         <p>
-          {prefix} base <b>{this.branches[0]}</b> to <b>{this.branches[1]}</b>
-          {!!this.state.message && ' (' + this.state.message + ')'}
+          { branches ? (
+            <span>
+              {prefix} base <b>{branches[0]}</b> to <b>{branches[1]}</b>
+              {!!this.state.message && ' (' + this.state.message + ')'}
+            </span>
+          ) : (
+            <span className="Loading" />
+          )}
         </p>
         <Tabs>
           <TabList>
@@ -60,7 +75,7 @@ class PullRequest extends Component {
             <CommentList comments={this.state.comments} />
           </TabPanel>
           <TabPanel>
-            <CommitList repoCid={this.url.repoCid} commits={this.state.commits} />
+            <CommitList repoCid={this.repoCid} commits={this.state.commits} />
           </TabPanel>
           <TabPanel>
             { !cannotCompare && <CommitDiffList changes={this.state.changes} /> }
@@ -71,8 +86,7 @@ class PullRequest extends Component {
   }
 
   async fetchComments(repoCid, pullCid) {
-    this.prCrdt = new RepoCrdt(repoCid).pullRequest(pullCid)
-    const comments = await this.prCrdt.fetchComments()
+    const comments = await new RepoCrdt(repoCid).fetchPRComments(pullCid)
     this.setState({ comments })
   }
 
@@ -88,8 +102,13 @@ class PullRequest extends Component {
     this.setState({ repo })
   }
 
-  async fetchCommits(branches) {
-    return this.state.repo.fetchCommitComparison(branches, this.setState.bind(this))
+  async fetchPullRequest(pullCid) {
+    const pr = await window.ipfs.dag.get(pullCid).then(r => r.value)
+    this.setState({ pr })
+  }
+
+  async fetchCommits() {
+    return this.state.repo.fetchCommitComparison(this.getBranches(), this.setState.bind(this))
   }
 
   async fetchDiff() {

@@ -24,7 +24,7 @@ class CommentList extends LoadingComponent {
   }
 
   renderComments(comments) {
-    return comments.map((c, i) => <Comment key={c ? c.hash : i} comment={c} />)
+    return comments.map((c, i) => <Comment key={c ? c.cid.toBaseEncodedString() : i} comment={c} />)
   }
 
   renderLoading() {

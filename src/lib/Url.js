@@ -88,6 +88,17 @@ class Url {
       pullCid: parts[4]
     }
   }
+
+  static parsePullRequestsPath(url) {
+    // /repo/<cid>/pulls
+    const parts = url.split('/')
+    if (parts[1] !== 'repo') return {}
+
+    return {
+      parts: parts,
+      repoCid: parts[2]
+    }
+  }
 }
 
 export default Url

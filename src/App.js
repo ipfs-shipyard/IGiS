@@ -6,6 +6,7 @@ import Commit from './components/Commit'
 import Commits from './components/Commits'
 import Compare from './components/Compare'
 import PullRequest from './components/PullRequest'
+import PullRequests from './components/PullRequests'
 import Panic from './components/Panic'
 import StatusBar from "./components/StatusBar";
 import NewRepo from "./components/NewRepo";
@@ -30,6 +31,7 @@ class App extends Component {
             <Route path="/repo/:repoCid/commit/:commitCid" component={Commit}/>
             <Route path="/repo/:repoCid/commits/:branch" component={Commits}/>
             <Route path="/repo/:repoCid/compare/:branch...:branch" component={Compare}/>
+            <Route path="/repo/:repoCid/pulls" component={PullRequests}/>
             <Route path="/repo/:repoCid/pull/:prid" component={PullRequest}/>
             <Route path="/repo/:repoCid" component={Repo}/>
           </Switch>
