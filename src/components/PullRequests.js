@@ -12,6 +12,12 @@ class PullRequests extends IGComponent {
     this.state = {}
   }
 
+  componentWillUnmount() {
+    super.componentWillUnmount()
+    this.prFetch && this.prFetch.cancel()
+    clearTimeout(this.prFetchTimeout)
+  }
+
   render() {
     const pathname = this.props.location.pathname
     const url = Url.parsePullRequestsPath(pathname)
@@ -44,8 +50,9 @@ class PullRequests extends IGComponent {
 
     // If it takes more than a short time to fetch the PRs then
     // clear the PR list so that the loading screen is displayed
+    clearTimeout(this.prFetchTimeout)
     let fetchComplete = false
-    setTimeout(() => !fetchComplete && this.setState({ prs: undefined }), 100)
+    this.prFetchTimeout = setTimeout(() => !fetchComplete && this.setState({ prs: undefined }), 100)
 
     // Fetch one extra row for pagination purposes
     this.prFetch = new RepoCrdt(repoCid).fetchPRList(offsetCid, this.rowCount + 1)
