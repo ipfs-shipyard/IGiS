@@ -90,13 +90,15 @@ class Url {
   }
 
   static parsePullRequestsPath(url) {
-    // /repo/<cid>/pulls
+    // /repo/<cid>/pulls/<offsetCid>
     const parts = url.split('/')
     if (parts[1] !== 'repo') return {}
 
     return {
       parts: parts,
-      repoCid: parts[2]
+      repoCid: parts[2],
+      offsetCid: parts[4],
+      basePath: parts.slice(0, 4).join('/')
     }
   }
 }

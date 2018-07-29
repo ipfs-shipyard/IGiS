@@ -8,43 +8,27 @@ import Url from '../lib/Url'
 class PullRequests extends IGComponent {
   constructor(props) {
     super(props)
-    this.rowCount = 20
+    this.rowCount = 2
     this.state = {}
-
-    const pathname = props.location.pathname
-    const url = Url.parsePullRequestsPath(pathname)
-    this.repoCid = url.repoCid
-  }
-
-  componentDidMount() {
-    this.triggerFetch()
-  }
-
-  async triggerFetch() {
-    await Promise.all([
-      this.fetchRepo(this.repoCid),
-      (async () => {
-        await this.fetchPullRequests(this.repoCid)
-        await this.fetchPullRequestAuthors()
-      })()
-    ])
   }
 
   render() {
     const pathname = this.props.location.pathname
     const url = Url.parsePullRequestsPath(pathname)
 
-    // TODO: move to PullRequestList
-    // If there is another pr in the list, show the more link
-    // let more = null
-    // if ((this.state.prs || []).length > this.rowCount) {
-    //   const nextPullRequest = this.state.prs[this.rowCount]
-    //   more = <div className="more-link"><Link to={`${url.basePath}/${nextPullRequest.cid}`}>More ▾</Link></div>
-    // }
+    // Fetch the repo and the commit list. Note that
+    // each will update the state, triggering a new render
+    this.triggerPromises([
+      [() => this.fetchRepo(url.repoCid), url.repoCid],
+      [() => this.fetchPullRequests(url.repoCid, url.offsetCid), url.offsetCid],
+      [() => this.fetchPullRequestAuthors(url.repoCid, url.offsetCid), url.offsetCid]
+    ])
 
+    const prs = this.state.prs && this.state.prs.slice(0, this.rowCount)
+    const next = (this.state.prs || [])[this.rowCount]
     return (
       <div className="PullRequests">
-        <PullRequestList repoCid={url.repoCid} prs={this.state.prs && this.state.prs.slice(0, this.rowCount)} />
+        <PullRequestList baseUrl={url.basePath} repoCid={url.repoCid} prs={prs} next={next} />
       </div>
     )
   }
@@ -54,12 +38,23 @@ class PullRequests extends IGComponent {
     this.setState({ repo })
   }
 
-  async fetchPullRequests(repoCid) {
-    const prs = await new RepoCrdt(repoCid).fetchPRList()
+  async fetchPullRequests(repoCid, offsetCid) {
+    // If we were fetching another PR, cancel it
+    this.prFetch && this.prFetch.cancel()
+
+    // If it takes more than a short time to fetch the PRs then
+    // clear the PR list so that the loading screen is displayed
+    let fetchComplete = false
+    setTimeout(() => !fetchComplete && this.setState({ prs: undefined }), 100)
+
+    // Fetch one extra row for pagination purposes
+    this.prFetch = new RepoCrdt(repoCid).fetchPRList(offsetCid, this.rowCount + 1)
+    const prs = await this.prFetch
+    fetchComplete = true
     this.setState({ prs })
   }
 
-  fetchPullRequestAuthors() {
+  async fetchPullRequestAuthors(repoCid, offsetCid) {
     return Promise.all(this.state.prs.map(async pr => {
       await pr.fetchAuthor()
       this.setState({ prs: this.state.prs })

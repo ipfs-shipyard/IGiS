@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import PullRequestListItem from './PullRequestListItem'
+import { Link } from 'react-router-dom'
 
 class PullRequestList extends Component {
   Element(props) {
@@ -18,6 +19,11 @@ class PullRequestList extends Component {
     return (
       <this.Element>
         {this.renderPullRequests(this.props.prs)}
+        {this.props.next && (
+          <div className="more-link">
+            <Link to={`${this.props.baseUrl}/${this.props.next.cid.toBaseEncodedString()}`}>More ▾</Link>
+          </div>
+        )}
       </this.Element>
     )
   }

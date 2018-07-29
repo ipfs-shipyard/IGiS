@@ -2,6 +2,7 @@ import md5 from 'md5'
 import moment from 'moment'
 import OrbitDB from 'orbit-db'
 import CID from 'cids'
+import Fetcher from '../Fetcher'
 
 async function storeMockUserData() {
   const user1 = {
@@ -102,27 +103,55 @@ async function storeMockPRCommentsData(db) {
   await add({ author: { '/': user2Cid }, text: 'This is my reply to the second comment', createdAt: new Date("2018-07-24T18:45:53.292Z") })
 }
 
-export class RepoCrdt {
-  constructor(repoCid) {
-    this.repoCid = repoCid
-    this.orbitdb = new OrbitDB(window.ipfs)
+class PRListFetcher extends Fetcher {
+  constructor(repoCid, orbitdb, offsetCid, limit) {
+    super()
+    this.repoCid
+    this.orbitdb = orbitdb
+    this.offsetCid = offsetCid
+    this.limit = limit
   }
 
-  async fetchPRList(limit = -1) {
+  run() {
+    return this.fetch()
+  }
+
+  async fetch() {
     // TODO: Throws 'non-base58 character'
     // https://github.com/orbitdb/orbit-db/issues/419
     // const dbName = this.repoCid + '-pulls'
     const dbName = 'orbit-db.igis.pulls-test-5'
     const db = await this.orbitdb.log(dbName, { write: ['*'] })
     await db.load()
-    let events = await db.iterator({ limit }).collect()
+    if (!this.running) return
+
+    let events = await db.iterator({ limit: -1 }).collect()
     if (!events.length) {
       await storeMockPRListData(db)
-      events = await db.iterator({ limit }).collect()
+      events = await db.iterator({ limit: -1 }).collect()
     }
+    if (!this.running) return
 
+    const i = events.findIndex(e => e.payload.value['/'] === this.offsetCid)
+    const offset = i >= 0 ? i : 0
+    events = events.slice(offset, offset + this.limit)
     events = await RepoCrdt.fetchIpfsLinks(events)
+    if (!this.running) return
+
     return events.map(e => new PullRequest(e.cid, new CID(e.author['/']), e.name, e.base, e.compare, e.createdAt))
+  }
+}
+
+export class RepoCrdt {
+  constructor(repoCid) {
+    this.repoCid = repoCid
+    this.orbitdb = new OrbitDB(window.ipfs)
+  }
+
+  fetchPRList(offsetCid, limit) {
+    const fetch = new PRListFetcher(this.repoCid, this.orbitdb, offsetCid, limit)
+    fetch.start()
+    return fetch
   }
 
   async fetchPRComments(pullCid) {
