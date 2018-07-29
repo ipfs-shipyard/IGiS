@@ -1,24 +1,8 @@
 import CID from 'cids'
 import moment from 'moment'
+import Fetcher from '../Fetcher'
 
 const COMMIT_SUMMARY_LEN = 80
-
-class Fetcher {
-  start() {
-    this.running = true
-    this.promise = this.run().then(res => {
-      this.running = false
-      return res
-    })
-    return this.promise
-  }
-  cancel() {
-    this.running = false
-  }
-  then(fn) {
-    this.promise.then(fn)
-  }
-}
 
 class RecursiveCommitFetcher extends Fetcher {
   // Set countRequired to -1 to fetch the entire history
