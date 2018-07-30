@@ -1,7 +1,9 @@
 import React from 'react'
-import CommitList from "./CommitList"
-import CommitDiffList from "./CommitDiffList"
+import Button from './Button'
+import CommitList from './CommitList'
+import CommitDiffList from './CommitDiffList'
 import GitRepo from '../lib/git/GitRepo'
+import NewPullRequestForm from './NewPullRequestForm'
 import IGComponent from './IGComponent'
 import Url from '../lib/Url'
 
@@ -34,6 +36,14 @@ class Compare extends IGComponent {
           {prefix} base <b>{url.branches[0]}</b> to <b>{url.branches[1]}</b>
           {!!this.state.message && ' (' + this.state.message + ')'}
         </p>
+        { !this.state.showNewPR && !!(this.state.commits || []).length && (
+          <Button className="pull-request" isLink={true} onClick={() => this.setState({ showNewPR: true })}>
+            New Pull Request
+          </Button>
+        )}
+        { this.state.showNewPR && (
+          <NewPullRequestForm repoCid={url.repoCid} branches={url.branches} onCancel={() => this.setState({ showNewPR: false })} />
+        )}
         <CommitList repoCid={url.repoCid} commits={this.state.commits} />
         { !cannotCompare && <CommitDiffList changes={this.state.changes} /> }
       </div>

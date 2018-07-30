@@ -1,6 +1,12 @@
 .Compare {
     p {
         padding: 0.5em;
+        width: 50em;
+        display: inline-block;
+    }
+    .Button.pull-request {
+        margin: 1.5em 0.5em 0 0;
+    	float: right;
     }
     .CommitDiffList {
     	margin-top: 1em;

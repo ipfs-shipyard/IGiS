@@ -104,10 +104,9 @@ async function storeMockPRCommentsData(db) {
 }
 
 class PRListFetcher extends Fetcher {
-  constructor(repoCid, orbitdb, offsetCid, limit) {
+  constructor(orbitLog, offsetCid, limit) {
     super()
-    this.repoCid
-    this.orbitdb = orbitdb
+    this.orbitLog = orbitLog
     this.offsetCid = offsetCid
     this.limit = limit
   }
@@ -117,11 +116,7 @@ class PRListFetcher extends Fetcher {
   }
 
   async fetch() {
-    // TODO: Throws 'non-base58 character'
-    // https://github.com/orbitdb/orbit-db/issues/419
-    // const dbName = this.repoCid + '-pulls'
-    const dbName = 'orbit-db.igis.pulls-test-5'
-    const db = await this.orbitdb.log(dbName, { write: ['*'] })
+    const db = await this.orbitLog
     await db.load()
     if (!this.running) return
 
@@ -148,18 +143,62 @@ export class RepoCrdt {
     this.orbitdb = new OrbitDB(window.ipfs)
   }
 
+  getPRCommentsDB() {
+    // TODO: Throws 'non-base58 character'
+    // https://github.com/orbitdb/orbit-db/issues/419
+    // const dbName = this.repoCid + '-pull-' + pullCid
+    const dbName = 'orbit-db.igis.comments-test-7'
+    return this.orbitdb.log(dbName, { write: ['*'] })
+  }
+
+  getPRListDB() {
+    // TODO: Throws 'non-base58 character'
+    // https://github.com/orbitdb/orbit-db/issues/419
+    // const dbName = this.repoCid + '-pulls'
+    const dbName = 'orbit-db.igis.pulls-test-7'
+    return this.orbitdb.log(dbName, { write: ['*'] })
+  }
+
+  async newPR(base, compare, name, comment) {
+    if (!name.trim()) {
+      throw new Error('The Pull Request must have a title')
+    }
+
+    const author = await User.loggedInUser()
+    const now = new Date()
+    const pr = {
+      createdAt: now,
+      author: { '/': author.cid.toBaseEncodedString() },
+      name,
+      base,
+      compare
+    }
+    const prCid = await window.ipfs.dag.put(pr, { format: 'dag-cbor' })
+    const listDb = await this.getPRListDB()
+    await listDb.load()
+    await listDb.add({ '/': prCid.toBaseEncodedString() })
+
+    if (!comment) return
+
+    const commentObj = {
+      createdAt: now,
+      author: { '/': author.cid.toBaseEncodedString() },
+      text: comment
+    }
+    const commentCid = await window.ipfs.dag.put(commentObj, { format: 'dag-cbor' })
+    const commentsDb = await this.getPRCommentsDB()
+    await commentsDb.load()
+    await commentsDb.add({ '/': commentCid.toBaseEncodedString() })
+  }
+
   fetchPRList(offsetCid, limit) {
-    const fetch = new PRListFetcher(this.repoCid, this.orbitdb, offsetCid, limit)
+    const fetch = new PRListFetcher(this.getPRListDB(), offsetCid, limit)
     fetch.start()
     return fetch
   }
 
   async fetchPRComments(pullCid) {
-    // TODO: Throws 'non-base58 character'
-    // https://github.com/orbitdb/orbit-db/issues/419
-    // const dbName = this.repoCid + '-pull-' + pullCid
-    const dbName = 'orbit-db.igis.comments-test-5'
-    const db = await this.orbitdb.log(dbName, { write: ['*'] })
+    const db = await this.getPRCommentsDB()
     await db.load()
     let events = await db.iterator({ limit: -1 }).collect()
     if (!events.length) {
@@ -231,7 +270,8 @@ export class CommentUpdate {
 }
 
 export class User {
-  constructor(username, name, avatar) {
+  constructor(cid, username, name, avatar) {
+    this.cid = cid
     this.username = username
     this.name = name
     this.avatar = avatar
@@ -247,6 +287,12 @@ export class User {
   static async fetch(cid) {
     const res = await window.ipfs.dag.get(cid)
     const val = res.value
-    return new User(val.username, val.name, val.avatar)
+    return new User(new CID(cid), val.username, val.name, val.avatar)
+  }
+
+  // TODO
+  static async loggedInUser() {
+    const [cid] = await storeMockUserData()
+    return User.fetch(cid)
   }
 }

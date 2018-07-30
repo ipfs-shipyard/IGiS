@@ -54,6 +54,9 @@ class PullRequest extends Component {
     const prefix = cannotCompare ? 'Cannot compare' : 'Comparing'
     return (
       <div className="PullRequest">
+        <h4>
+          {this.state.pr ? this.state.pr.name : <span className="Loading" />}
+        </h4>
         <p>
           { branches ? (
             <span>
@@ -85,6 +88,16 @@ class PullRequest extends Component {
     )
   }
 
+  async fetchRepo(repoCid) {
+    const repo = await GitRepo.fetch(repoCid)
+    this.setState({ repo })
+  }
+
+  async fetchPullRequest(pullCid) {
+    const pr = await window.ipfs.dag.get(pullCid).then(r => r.value)
+    this.setState({ pr })
+  }
+
   async fetchComments(repoCid, pullCid) {
     const comments = await new RepoCrdt(repoCid).fetchPRComments(pullCid)
     this.setState({ comments })
@@ -95,16 +108,6 @@ class PullRequest extends Component {
       await c.fetchAuthor()
       this.setState({ comments: this.state.comments })
     })
-  }
-
-  async fetchRepo(repoCid) {
-    const repo = await GitRepo.fetch(repoCid)
-    this.setState({ repo })
-  }
-
-  async fetchPullRequest(pullCid) {
-    const pr = await window.ipfs.dag.get(pullCid).then(r => r.value)
-    this.setState({ pr })
   }
 
   async fetchCommits() {

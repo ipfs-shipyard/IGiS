@@ -8,7 +8,7 @@ import Url from '../lib/Url'
 class PullRequests extends IGComponent {
   constructor(props) {
     super(props)
-    this.rowCount = 2
+    this.rowCount = 20
     this.state = {}
   }
 
