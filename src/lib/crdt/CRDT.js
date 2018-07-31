@@ -244,6 +244,12 @@ export class PullRequest {
     this.author = this.author || (await User.fetch(this.authorCid))
     return this.author
   }
+
+  static async fetch(cid) {
+    const res = await window.ipfs.dag.get(cid)
+    const val = res.value
+    return new PullRequest(new CID(cid), new CID(val.author['/']), val.name, val.base, val.compare, val.createdAt)
+  }
 }
 
 export class Comment {

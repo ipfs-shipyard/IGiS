@@ -1,12 +1,14 @@
-import React, { Component } from 'react'
+import Avatar from './Avatar'
 import CommentList from './CommentList'
 import CommitList from './CommitList'
 import CommitDiffList from './CommitDiffList'
 import GitRepo from '../lib/git/GitRepo'
+import React, { Component } from 'react'
 import Ref from '../lib/git/util/Ref'
-import { RepoCrdt } from '../lib/crdt/CRDT'
+import { RepoCrdt, PullRequest as PullRequestCrdt } from '../lib/crdt/CRDT'
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs'
 import Url from '../lib/Url'
+import Username from './Username'
 
 class PullRequest extends Component {
   constructor(props) {
@@ -57,6 +59,10 @@ class PullRequest extends Component {
         <h4>
           {this.state.pr ? this.state.pr.name : <span className="Loading" />}
         </h4>
+        <div className="pr-author">
+          <Avatar user={(this.state.pr || {}).author} />
+          <Username user={(this.state.pr || {}).author} />
+        </div>
         <p>
           { branches ? (
             <span>
@@ -94,7 +100,10 @@ class PullRequest extends Component {
   }
 
   async fetchPullRequest(pullCid) {
-    const pr = await window.ipfs.dag.get(pullCid).then(r => r.value)
+    const pr = await PullRequestCrdt.fetch(pullCid)
+    this.setState({ pr })
+
+    await pr.fetchAuthor()
     this.setState({ pr })
   }
 

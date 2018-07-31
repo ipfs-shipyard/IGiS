@@ -12,6 +12,19 @@
             display: inline-block;
         }
     }
+    .pr-author {
+        padding: 0 0.5em;
+
+        .Avatar {
+            width: 1.5em;
+            height: 1.5em;
+            vertical-align: middle;
+            margin-right: 0.5em;
+        }
+        .Username {
+            font-weight: inherit;
+        }
+    }
     p {
         padding: 0.5em;
 
