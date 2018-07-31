@@ -1,5 +1,6 @@
 import React from 'react'
 import Avatar from './Avatar'
+import CommentMarkdown from './CommentMarkdown'
 import LoadingComponent from './LoadingComponent'
 import Username from './Username'
 
@@ -31,7 +32,7 @@ class Comment extends LoadingComponent {
   renderContent() {
     return (
       <this.Element comment={this.props.comment}>
-        {this.props.comment.text}
+        <CommentMarkdown source={this.props.comment.text} />
       </this.Element>
     )
   }

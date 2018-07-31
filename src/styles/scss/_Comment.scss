@@ -22,7 +22,10 @@
         }
         .text {
         	display: inline-block;
-            margin-top: 0.5em;
+
+            p {
+                margin: 0.5em 0;
+            }
 
             .Loading {
                 .item {
