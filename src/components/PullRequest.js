@@ -3,9 +3,10 @@ import CommentList from './CommentList'
 import CommitList from './CommitList'
 import CommitDiffList from './CommitDiffList'
 import GitRepo from '../lib/git/GitRepo'
+import NewCommentForm from './NewCommentForm'
 import React, { Component } from 'react'
 import Ref from '../lib/git/util/Ref'
-import { RepoCrdt, PullRequest as PullRequestCrdt } from '../lib/crdt/CRDT'
+import { RepoCrdt, PullRequest as PullRequestCrdt, User as UserCrdt } from '../lib/crdt/CRDT'
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs'
 import Url from '../lib/Url'
 import Username from './Username'
@@ -28,14 +29,19 @@ class PullRequest extends Component {
   }
 
   async triggerFetch() {
+    new RepoCrdt(this.repoCid).onPRCommentsChange(this.pullCid, comments => {
+      this.setState({ comments }, () => this.fetchCommentAuthors())
+    })
+
     await Promise.all([
+      this.fetchLoggedInUser(),
       this.fetchRepo(this.repoCid),
-      this.fetchPullRequest(this.pullCid)
+      this.fetchPullRequest()
     ])
     await Promise.all([
       (async () => {
-        await this.fetchComments(this.repoCid, this.pullCid)
-        await this.fetchCommentAuthors(this.repoCid, this.pullCid)
+        await this.fetchComments()
+        await this.fetchCommentAuthors()
       })(),
       (async () => {
         await this.fetchCommits()
@@ -82,6 +88,9 @@ class PullRequest extends Component {
 
           <TabPanel>
             <CommentList comments={this.state.comments} />
+            { !!this.state.comments && (
+              <NewCommentForm author={this.state.loggedInUser} repoCid={this.repoCid} pullCid={this.pullCid} />
+            )}
           </TabPanel>
           <TabPanel>
             <CommitList repoCid={this.repoCid} commits={this.state.commits} />
@@ -94,21 +103,26 @@ class PullRequest extends Component {
     )
   }
 
+  async fetchLoggedInUser() {
+    const loggedInUser = await UserCrdt.loggedInUser()
+    this.setState({ loggedInUser })
+  }
+
   async fetchRepo(repoCid) {
     const repo = await GitRepo.fetch(repoCid)
     this.setState({ repo })
   }
 
-  async fetchPullRequest(pullCid) {
-    const pr = await PullRequestCrdt.fetch(pullCid)
+  async fetchPullRequest() {
+    const pr = await PullRequestCrdt.fetch(this.pullCid)
     this.setState({ pr })
 
     await pr.fetchAuthor()
     this.setState({ pr })
   }
 
-  async fetchComments(repoCid, pullCid) {
-    const comments = await new RepoCrdt(repoCid).fetchPRComments(pullCid)
+  async fetchComments() {
+    const comments = await new RepoCrdt(this.repoCid).fetchPRComments(this.pullCid)
     this.setState({ comments })
   }
 

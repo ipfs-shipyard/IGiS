@@ -3,6 +3,7 @@ import moment from 'moment'
 import OrbitDB from 'orbit-db'
 import CID from 'cids'
 import Fetcher from '../Fetcher'
+import { EventEmitter } from 'fbemitter'
 
 async function storeMockUserData() {
   const user1 = {
@@ -103,6 +104,63 @@ async function storeMockPRCommentsData(db) {
   await add({ author: { '/': user2Cid }, text: 'This is my reply to the second comment', createdAt: new Date("2018-07-24T18:45:53.292Z") })
 }
 
+class OrbitDBManager extends EventEmitter {
+  constructor() {
+    super()
+    this.orbitdb = new OrbitDB(window.ipfs)
+    this.dbs = {}
+    this.listening = {}
+  }
+
+  getDB(dbName) {
+    this.dbs[dbName] = this.dbs[dbName] || this.orbitdb.log(dbName, { write: ['*'] })
+    return this.dbs[dbName]
+  }
+
+  async onChange(dbName, fetchFn, cb) {
+    const clientEventName = dbName + '-client-change'
+    console.log('register for changes', clientEventName)
+    this.addListener(clientEventName, cb)
+
+    return this.setupDBListener(dbName, fetchFn)
+  }
+
+  async setupDBListener(dbName, fetchFn) {
+    if (this.listening[dbName]) return
+
+    this.listening[dbName] = true
+
+    const eventName = dbName + '-change'
+    const clientEventName = dbName + '-client-change'
+    console.log('set up change listening', eventName)
+    this.addListener(eventName, () => {
+      console.log('fetching for listener', eventName)
+      // TODO: make sure fetchFn doesn't get called repeatedly
+      // as we cycle through the listeners for this event
+      fetchFn().then(res => this.emit(clientEventName, res))
+    })
+
+    const db = await this.getDB(dbName)
+    await db.load()
+    db.events.on('replicated', async () => {
+      console.log('change triggered by orbit', eventName)
+      this.emit(eventName)
+    })
+  }
+
+  fireChange(dbName) {
+    const eventName = dbName + '-change'
+    console.log('change fired manually', eventName)
+    this.emit(eventName)
+  }
+}
+
+let _orbitManager
+function getOrbitManager() {
+  _orbitManager = _orbitManager || new OrbitDBManager()
+  return _orbitManager
+}
+
 class PRListFetcher extends Fetcher {
   constructor(orbitLog, offsetCid, limit) {
     super()
@@ -140,23 +198,20 @@ class PRListFetcher extends Fetcher {
 export class RepoCrdt {
   constructor(repoCid) {
     this.repoCid = repoCid
-    this.orbitdb = new OrbitDB(window.ipfs)
   }
 
-  getPRCommentsDB() {
+  getPRCommentsDBName(prCid) {
     // TODO: Throws 'non-base58 character'
     // https://github.com/orbitdb/orbit-db/issues/419
-    // const dbName = this.repoCid + '-pull-' + pullCid
-    const dbName = 'orbit-db.igis.comments-test-7'
-    return this.orbitdb.log(dbName, { write: ['*'] })
+    // const dbName = this.repoCid + '-pull-' + prCid
+    return 'orbit-db.igis.comments-test-7'
   }
 
-  getPRListDB() {
+  getPRListDBName() {
     // TODO: Throws 'non-base58 character'
     // https://github.com/orbitdb/orbit-db/issues/419
     // const dbName = this.repoCid + '-pulls'
-    const dbName = 'orbit-db.igis.pulls-test-7'
-    return this.orbitdb.log(dbName, { write: ['*'] })
+    return 'orbit-db.igis.pulls-test-7'
   }
 
   async newPR(base, compare, name, comment) {
@@ -165,30 +220,42 @@ export class RepoCrdt {
     }
 
     const author = await User.loggedInUser()
-    const now = new Date()
     const pr = {
-      createdAt: now,
+      createdAt: new Date(),
       author: { '/': author.cid.toBaseEncodedString() },
       name,
       base,
       compare
     }
     const prCid = await window.ipfs.dag.put(pr, { format: 'dag-cbor' })
-    const listDb = await this.getPRListDB()
-    await listDb.load()
-    await listDb.add({ '/': prCid.toBaseEncodedString() })
+    const dbName = this.getPRListDB()
+    const db = await getOrbitManager().getDB(dbName)
+    await db.load()
+    await db.add({ '/': prCid.toBaseEncodedString() })
 
     if (!comment) return
 
+    return this.newComment(prCid, comment)
+  }
+
+  async newComment(prCid, text) {
+    if (!text.trim()) {
+      throw new Error('The comment cannot be blank')
+    }
+
+    const author = await User.loggedInUser()
     const commentObj = {
-      createdAt: now,
+      createdAt: new Date(),
       author: { '/': author.cid.toBaseEncodedString() },
-      text: comment
+      text
     }
     const commentCid = await window.ipfs.dag.put(commentObj, { format: 'dag-cbor' })
-    const commentsDb = await this.getPRCommentsDB()
-    await commentsDb.load()
-    await commentsDb.add({ '/': commentCid.toBaseEncodedString() })
+    const dbName = this.getPRCommentsDBName()
+    const db = await getOrbitManager().getDB(dbName)
+    await db.load()
+    await db.add({ '/': commentCid.toBaseEncodedString() })
+
+    getOrbitManager().fireChange(dbName)
   }
 
   fetchPRList(offsetCid, limit) {
@@ -197,8 +264,9 @@ export class RepoCrdt {
     return fetch
   }
 
-  async fetchPRComments(pullCid) {
-    const db = await this.getPRCommentsDB()
+  async fetchPRComments(prCid) {
+    const dbName = this.getPRCommentsDBName()
+    const db = await getOrbitManager().getDB(dbName)
     await db.load()
     let events = await db.iterator({ limit: -1 }).collect()
     if (!events.length) {
@@ -219,6 +287,15 @@ export class RepoCrdt {
       const updates = m.map(u => new CommentUpdate(u.text, u.createdAt))
       return new Comment(m[0].cid, new CID(m[0].author['/']), m[0].text, m[0].createdAt, updates)
     })
+  }
+
+  async onPRCommentsChange(prCid, cb) {
+    const dbName = this.getPRCommentsDBName()
+    getOrbitManager().onChange(dbName, () => this.fetchPRComments(prCid), cb)
+  }
+
+  getPRCommentsEventName(prCid) {
+    return `event-repo-${this.repoCid}-pull-${prCid}-comments`
   }
 
   static fetchIpfsLinks(rows) {
@@ -291,14 +368,31 @@ export class User {
   }
 
   static async fetch(cid) {
-    const res = await window.ipfs.dag.get(cid)
-    const val = res.value
-    return new User(new CID(cid), val.username, val.name, val.avatar)
+    cid = new CID(cid) // make sure it's a CID (not a string)
+    let user = User.cacheGet(cid)
+    if (user) return (await user)
+
+    user = new Promise(async a => {
+      const res = await window.ipfs.dag.get(cid)
+      const val = res.value
+      a(new User(cid, val.username, val.name, val.avatar))
+    })
+    User.cacheSet(cid, user)
+    return (await user)
   }
 
   // TODO
   static async loggedInUser() {
-    const [cid] = await storeMockUserData()
+    const [,cid] = await storeMockUserData()
     return User.fetch(cid)
+  }
+
+  // TODO: LRU
+  static cacheSet(cid, user) {
+    User.cache = User.cache || {}
+    User.cache[cid.toBaseEncodedString()] = user
+  }
+  static cacheGet(cid) {
+    return ((User.cache || {})[cid.toBaseEncodedString()])
   }
 }
