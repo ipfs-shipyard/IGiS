@@ -12,6 +12,7 @@ class CommentMarkdown extends Component {
     const content = this.props.source
     if (content == null) return null
 
+    // TODO: Remove <script> tags, etc to prevent XSS
     return (
       <div className="CommentMarkdown" dangerouslySetInnerHTML={{__html: this.converter.makeHtml(content)}} />
     )
