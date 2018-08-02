@@ -118,40 +118,19 @@ class OrbitDBManager extends EventEmitter {
   }
 
   async onChange(dbName, fetchFn, cb) {
-    const clientEventName = dbName + '-client-change'
-    console.log('register for changes', clientEventName)
-    this.addListener(clientEventName, cb)
-
-    return this.setupDBListener(dbName, fetchFn)
-  }
-
-  async setupDBListener(dbName, fetchFn) {
     if (this.listening[dbName]) return
 
     this.listening[dbName] = true
 
-    const eventName = dbName + '-change'
-    const clientEventName = dbName + '-client-change'
-    console.log('set up change listening', eventName)
-    this.addListener(eventName, () => {
-      console.log('fetching for listener', eventName)
-      // TODO: make sure fetchFn doesn't get called repeatedly
-      // as we cycle through the listeners for this event
-      fetchFn().then(res => this.emit(clientEventName, res))
-    })
-
     const db = await this.getDB(dbName)
     await db.load()
-    db.events.on('replicated', async () => {
-      console.log('change triggered by orbit', eventName)
-      this.emit(eventName)
-    })
-  }
 
-  fireChange(dbName) {
-    const eventName = dbName + '-change'
-    console.log('change fired manually', eventName)
-    this.emit(eventName)
+    // Trigger event when change comes from local or remote peer
+    function onTriggered () {
+      fetchFn().then(cb)
+    }
+    db.events.on('write', onTriggered)
+    db.events.on('replicated', onTriggered)
   }
 }
 
@@ -254,8 +233,6 @@ export class RepoCrdt {
     const db = await getOrbitManager().getDB(dbName)
     await db.load()
     await db.add({ '/': commentCid.toBaseEncodedString() })
-
-    getOrbitManager().fireChange(dbName)
   }
 
   fetchPRList(offsetCid, limit) {
@@ -268,6 +245,7 @@ export class RepoCrdt {
     const dbName = this.getPRCommentsDBName()
     const db = await getOrbitManager().getDB(dbName)
     await db.load()
+
     let events = await db.iterator({ limit: -1 }).collect()
     if (!events.length) {
       await storeMockPRCommentsData(db)
