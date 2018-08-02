@@ -127,10 +127,22 @@ class PullRequest extends Component {
   }
 
   async fetchCommentAuthors() {
-    this.state.comments.forEach(async c => {
-      await c.fetchAuthor()
-      this.setState({ comments: this.state.comments })
+    // Multiple comments will have the same author,
+    // and users are cached, so split the comments up
+    // by author, and then render the authors of all
+    // those comments at once
+    const comments = this.state.comments
+    const byAuthor = {}
+    comments.forEach(c => {
+      const authorCid = c.authorCid.toBaseEncodedString()
+      byAuthor[authorCid] = byAuthor[authorCid] || c
     })
+
+    return Promise.all(Object.keys(byAuthor).map(async authorCid => {
+      const commentsWithAuthor = comments.filter(c => c.authorCid.toBaseEncodedString() === authorCid)
+      await Promise.all(commentsWithAuthor.map(c => c.fetchAuthor()))
+      this.setState({ comments: this.state.comments })
+    }))
   }
 
   async fetchCommits() {
