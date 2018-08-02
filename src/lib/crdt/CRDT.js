@@ -3,7 +3,7 @@ import moment from 'moment'
 import OrbitDB from 'orbit-db'
 import CID from 'cids'
 import Fetcher from '../Fetcher'
-import { EventEmitter } from 'fbemitter'
+import EventEmitter from 'events'
 
 async function storeMockUserData() {
   const user1 = {
