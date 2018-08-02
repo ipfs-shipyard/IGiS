@@ -108,6 +108,7 @@ class OrbitDBManager extends EventEmitter {
   constructor() {
     super()
     this.orbitdb = new OrbitDB(window.ipfs)
+    console.log(this.orbitdb)
     this.dbs = {}
     this.listening = {}
   }
@@ -141,9 +142,9 @@ function getOrbitManager() {
 }
 
 class PRListFetcher extends Fetcher {
-  constructor(orbitLog, offsetCid, limit) {
+  constructor(dbName, offsetCid, limit) {
     super()
-    this.orbitLog = orbitLog
+    this.dbName = dbName
     this.offsetCid = offsetCid
     this.limit = limit
   }
@@ -153,7 +154,7 @@ class PRListFetcher extends Fetcher {
   }
 
   async fetch() {
-    const db = await this.orbitLog
+    const db = await getOrbitManager().getDB(this.dbName)
     await db.load()
     if (!this.running) return
 
@@ -207,7 +208,7 @@ export class RepoCrdt {
       compare
     }
     const prCid = await window.ipfs.dag.put(pr, { format: 'dag-cbor' })
-    const dbName = this.getPRListDB()
+    const dbName = this.getPRListDBName()
     const db = await getOrbitManager().getDB(dbName)
     await db.load()
     await db.add({ '/': prCid.toBaseEncodedString() })
@@ -236,7 +237,7 @@ export class RepoCrdt {
   }
 
   fetchPRList(offsetCid, limit) {
-    const fetch = new PRListFetcher(this.getPRListDB(), offsetCid, limit)
+    const fetch = new PRListFetcher(this.getPRListDBName(), offsetCid, limit)
     fetch.start()
     return fetch
   }
