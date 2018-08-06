@@ -77,6 +77,10 @@ class Url {
     }
   }
 
+  static toPullRequest(repoCid, prCid) {
+    return `/repo/${repoCid}/pull/${prCid}`
+  }
+
   static parsePullRequestPath(url) {
     // /repo/<cid>/pull/<prid>
     const parts = url.split('/')
@@ -85,7 +89,7 @@ class Url {
     return {
       parts: parts,
       repoCid: parts[2],
-      pullCid: parts[4]
+      prCid: parts[4]
     }
   }
 

@@ -46,7 +46,7 @@ class NewCommentForm extends Component {
   }
 
   async handleSubmit() {
-    await new RepoCrdt(this.props.repoCid).newComment(this.props.pullCid, this.state.value)
+    await new RepoCrdt(this.props.repoCid).newComment(this.props.prCid, this.state.value)
     this.setState({ value: '' })
   }
 }

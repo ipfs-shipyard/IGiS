@@ -21,7 +21,7 @@ class PullRequest extends Component {
     const pathname = this.props.location.pathname
     const url = Url.parsePullRequestPath(pathname)
     this.repoCid = url.repoCid
-    this.pullCid = url.pullCid
+    this.prCid = url.prCid
   }
 
   componentDidMount() {
@@ -29,7 +29,7 @@ class PullRequest extends Component {
   }
 
   async triggerFetch() {
-    new RepoCrdt(this.repoCid).onPRCommentsChange(this.pullCid, comments => {
+    new RepoCrdt(this.repoCid).onPRCommentsChange(this.prCid, comments => {
       this.setState({ comments }, () => this.fetchCommentAuthors())
     })
 
@@ -89,7 +89,7 @@ class PullRequest extends Component {
           <TabPanel>
             <CommentList comments={this.state.comments} />
             { !!this.state.comments && (
-              <NewCommentForm author={this.state.loggedInUser} repoCid={this.repoCid} pullCid={this.pullCid} />
+              <NewCommentForm author={this.state.loggedInUser} repoCid={this.repoCid} prCid={this.prCid} />
             )}
           </TabPanel>
           <TabPanel>
@@ -114,7 +114,7 @@ class PullRequest extends Component {
   }
 
   async fetchPullRequest() {
-    const pr = await PullRequestCrdt.fetch(this.pullCid)
+    const pr = await PullRequestCrdt.fetch(this.prCid)
     this.setState({ pr })
 
     await pr.fetchAuthor()
@@ -122,7 +122,7 @@ class PullRequest extends Component {
   }
 
   async fetchComments() {
-    const comments = await new RepoCrdt(this.repoCid).fetchPRComments(this.pullCid)
+    const comments = await new RepoCrdt(this.repoCid).fetchPRComments(this.prCid)
     this.setState({ comments })
   }
 

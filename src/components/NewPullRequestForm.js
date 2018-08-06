@@ -1,6 +1,7 @@
 import Button from './Button'
 import React, { Component } from 'react'
 import { RepoCrdt } from '../lib/crdt/CRDT'
+import Url from '../lib/Url'
 
 class NewPullRequestForm extends Component {
   render() {
@@ -27,8 +28,8 @@ class NewPullRequestForm extends Component {
       repo: this.props.repoCid,
       ref: this.props.branches[1]
     }
-    await new RepoCrdt(this.props.repoCid).newPR(base, compare, this.nameInput.value, this.commentInput.value)
-    window.location.href = `#/repo/${this.props.repoCid}/pulls`
+    const pr = await new RepoCrdt(this.props.repoCid).newPR(base, compare, this.nameInput.value, this.commentInput.value)
+    window.location.hash = Url.toPullRequest(this.props.repoCid, pr.cid.toBaseEncodedString())
   }
 }
 
