@@ -5,10 +5,14 @@ export default class Fetcher {
       this.running = false
       return res
     })
-    return this.promise
+    return this
+  }
+  run() {
+    throw new Error('Fetcher must implement a run() function that returns a promise')
   }
   cancel() {
     this.running = false
+    this.onCancel && this.onCancel()
   }
   then(fn) {
     this.promise.then(fn)

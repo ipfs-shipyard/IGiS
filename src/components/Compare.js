@@ -2,9 +2,9 @@ import React from 'react'
 import Button from './Button'
 import CommitList from './CommitList'
 import CommitDiffList from './CommitDiffList'
+import IGComponent from './IGComponent'
 import GitRepo from '../lib/git/GitRepo'
 import NewPullRequestForm from './NewPullRequestForm'
-import IGComponent from './IGComponent'
 import Url from '../lib/Url'
 
 class Compare extends IGComponent {
@@ -14,26 +14,28 @@ class Compare extends IGComponent {
       commitsFetchComplete: false,
       commits: []
     }
+
+    const pathname = this.props.location.pathname
+    const url = Url.parseComparePath(pathname)
+    this.repoCid = url.repoCid
+    this.branches = url.branches
+  }
+
+  componentDidMount() {
+    this.triggerPromises([
+      [() => GitRepo.fetch(this.repoCid), false, 'repo'],
+      [() => this.fetchCommits(this.branches), false],
+      [() => this.fetchDiff(), false, 'changes']
+    ])
   }
 
   render() {
-    const pathname = this.props.location.pathname
-    const url = Url.parseComparePath(pathname)
-
-    // Fetch the repo, the commit list and then the diff. Note that
-    // each will update the state, triggering a new render
-    this.triggerPromises([
-      [() => this.fetchRepo(url.repoCid), url.repoCid],
-      [() => this.fetchCommits(url.branches), url.branches.join('-')],
-      [() => this.fetchDiff(), url.branches.join('-')]
-    ])
-
     const cannotCompare = this.state.commitsFetchComplete && !this.state.commits.length
     const prefix = cannotCompare ? 'Cannot compare' : 'Comparing'
     return (
       <div className="Compare">
         <p>
-          {prefix} base <b>{url.branches[0]}</b> to <b>{url.branches[1]}</b>
+          {prefix} base <b>{this.branches[0]}</b> to <b>{this.branches[1]}</b>
           {!!this.state.message && ' (' + this.state.message + ')'}
         </p>
         { !this.state.showNewPR && !!(this.state.commits || []).length && (
@@ -42,21 +44,16 @@ class Compare extends IGComponent {
           </Button>
         )}
         { this.state.showNewPR && (
-          <NewPullRequestForm repoCid={url.repoCid} branches={url.branches} onCancel={() => this.setState({ showNewPR: false })} />
+          <NewPullRequestForm repoCid={this.repoCid} branches={this.branches} onCancel={() => this.setState({ showNewPR: false })} />
         )}
-        <CommitList repoCid={url.repoCid} commits={this.state.commits} />
+        <CommitList repoCid={this.repoCid} commits={this.state.commits} />
         { !cannotCompare && <CommitDiffList changes={this.state.changes} /> }
       </div>
     )
   }
 
-  async fetchRepo(repoCid) {
-    const repo = await GitRepo.fetch(repoCid)
-    this.setState({ repo })
-  }
-
-  async fetchCommits(branches) {
-    return this.state.repo.fetchCommitComparison(branches, this.setState.bind(this))
+  async fetchCommits() {
+    return this.state.repo.fetchCommitComparison(this.branches, this.setState.bind(this))
   }
 
   async fetchDiff() {
@@ -65,8 +62,7 @@ class Compare extends IGComponent {
     // to jump around)
     if (!this.state.commits[0]) return
 
-    const changes = await this.state.commits[0].fetchDiff(null, this.state.intersectCommit)
-    this.setState({ changes })
+    return this.state.commits[0].fetchDiff(null, this.state.intersectCommit)
   }
 }
 

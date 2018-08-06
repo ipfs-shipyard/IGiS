@@ -21,7 +21,7 @@ class GitRepo {
     let object = await this.refCommit(refNick)
     if(object instanceof GitTag)
       object = await object.taggedObject()
-    return object.cid
+    return object
   }
 
   async refCommit(refNick) {
@@ -30,7 +30,7 @@ class GitRepo {
   }
 
   async fetchCommitComparison(refNicks, onUpdate) {
-    return new CommitCompare(this, refNicks).fetchComparison(onUpdate)
+    return new CommitCompare(this, refNicks, onUpdate).start()
   }
 
   async getObject(path) {

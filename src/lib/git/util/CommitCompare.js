@@ -1,16 +1,23 @@
+import Fetcher from '../../Fetcher'
 import GitCommit from '../GitCommit'
 
-class CommitCompare {
-  constructor(repo, refNicks) {
+class CommitCompare extends Fetcher {
+  constructor(repo, refNicks, onUpdate) {
+    super()
     this.repo = repo
     this.refNicks = refNicks
+    this.onUpdate = onUpdate
   }
 
-  async fetchComparison(onUpdate) {
+  onCancel() {
+    this.fetches && this.fetches.forEach(f => f.cancel())
+  }
+
+  async run() {
     // Fetch the head commit on the base branch and the comparison branch
-    const refHeads = await Promise.all(this.refNicks.map(b => this.repo.refHead(b)))
+    const refHeads = await Promise.all(this.refNicks.map(b => this.repo.refHead(b).then(o => o.cid)))
     if (refHeads[0] === refHeads[1]) {
-      return onUpdate({ commitsFetchComplete: true, message: 'same branch head' })
+      return this.onUpdate({ commitsFetchComplete: true, message: 'same branch head' })
     }
 
     return new Promise((resolve, reject) => {
@@ -22,14 +29,13 @@ class CommitCompare {
         resolve = null
       }
 
-      let fetches = []
       let completeCount = 0
       const onComplete = () => {
         completeCount++
         if (completeCount > 1) {
           // When the fetches have completed, clean up and render
-          fetches.forEach(f => f.cancel())
-          onUpdate({ commitsFetchComplete: true })
+          this.onCancel()
+          this.onUpdate({ commitsFetchComplete: true })
           resolvePromise()
         }
       }
@@ -39,9 +45,9 @@ class CommitCompare {
       const compare = () => {
         let state = CommitCompare.compareRefCommits(baseCommits, compCommits)
         if (state.commitsFetchComplete) {
-          fetches.forEach(f => f.cancel())
+          this.onCancel()
         }
-        onUpdate(state)
+        this.onUpdate(state)
         if (state.commitsFetchComplete) {
           resolvePromise()
         }
@@ -55,11 +61,11 @@ class CommitCompare {
         compCommits = cs
         compare()
       }
-      fetches = [
+      this.fetches = [
         GitCommit.fetchCommitAndParents(this.repo, refHeads[0], -1, onBaseUpdate),
         GitCommit.fetchCommitAndParents(this.repo, refHeads[1], -1, onCompUpdate)
       ]
-      fetches.forEach(f => f.then(onComplete))
+      this.fetches.forEach(f => f.then(onComplete))
     })
   }
 
