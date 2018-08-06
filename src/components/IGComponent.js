@@ -30,11 +30,7 @@ class PromiseMonitor {
 
   cancel() {
     this.running = false
-    for (const p of this.promises) {
-      if (p instanceof Fetcher) {
-        p.cancel()
-      }
-    }
+    this.executing instanceof Fetcher && this.executing.cancel()
   }
 
   run() {
@@ -48,26 +44,9 @@ class PromiseMonitor {
       const promise = this.promises[i]
       const [fn, key, cb] = promise
       const cacheable = key !== false
-      if (cacheable && key && (this.cache[i] || {}).key === key && (this.cache[i] || {}).complete) {
-        // Found the result in the cache, move on to the next promise
-        return setTimeout(() => next(i + 1, this.cache[i].value), 0)
-      }
-
-      if (cacheable) {
-        this.cache[i] = {
-          complete: false,
-          key
-        }
-      }
-
-      const res = fn(prevVal)
+      
       const onComplete = val => {
         if (!this.running) return
-
-        if (cacheable) {
-          this.cache[i].value = val
-          this.cache[i].complete = true
-        }
 
         // If a callback was provided
         if (cb) {
@@ -83,10 +62,35 @@ class PromiseMonitor {
 
         return next(i + 1, val)
       }
-      if (res instanceof Promise) {
-        res.then(onComplete)
+
+      if (cacheable && key && (this.cache[i] || {}).key === key && (this.cache[i] || {}).complete) {
+        // Found the result in the cache, move on to the next promise
+        return setTimeout(() => onComplete(this.cache[i].value), 0)
+      }
+
+      if (cacheable) {
+        this.cache[i] = {
+          complete: false,
+          key
+        }
+      }
+
+      const callNext = val => {
+        if (!this.running) return
+
+        if (cacheable) {
+          this.cache[i].value = val
+          this.cache[i].complete = true
+        }
+        onComplete(val)
+      }
+
+      const res = fn(prevVal)
+      this.executing = res
+      if (res instanceof Promise || res instanceof Fetcher) {
+        res.then(callNext)
       } else {
-        setTimeout(() => onComplete(res), 0)
+        setTimeout(() => callNext(res), 0)
       }
     }
     return next(0)

@@ -29,11 +29,14 @@ class GitRepo {
     return Ref.refCommit(refs, this.defaultBranch, refNick)
   }
 
-  async fetchCommitComparison(refNicks, onUpdate) {
+  fetchCommitComparison(refNicks, onUpdate) {
     return new CommitCompare(this, refNicks, onUpdate).start()
   }
 
   async getObject(path) {
+    // Simulate network fetch
+    // await new Promise(a => setTimeout(a, 1000))
+
     console.debug('Fetch', path)
     const data = (await window.ipfs.dag.get(path)).value
     // If this is a Uint8Array treat it as a Git blob

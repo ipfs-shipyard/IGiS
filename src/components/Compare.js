@@ -24,7 +24,7 @@ class Compare extends IGComponent {
   componentDidMount() {
     this.triggerPromises([
       [() => GitRepo.fetch(this.repoCid), false, 'repo'],
-      [() => this.fetchCommits(this.branches), false],
+      [repo => this.fetchCommits(repo, this.branches), false],
       [() => this.fetchDiff(), false, 'changes']
     ])
   }
@@ -52,8 +52,8 @@ class Compare extends IGComponent {
     )
   }
 
-  async fetchCommits() {
-    return this.state.repo.fetchCommitComparison(this.branches, this.setState.bind(this))
+  fetchCommits(repo) {
+    return repo.fetchCommitComparison(this.branches, this.setState.bind(this))
   }
 
   async fetchDiff() {

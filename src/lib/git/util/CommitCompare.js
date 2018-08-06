@@ -61,6 +61,9 @@ class CommitCompare extends Fetcher {
         compCommits = cs
         compare()
       }
+
+      if (!this.running) return
+
       this.fetches = [
         GitCommit.fetchCommitAndParents(this.repo, refHeads[0], -1, onBaseUpdate),
         GitCommit.fetchCommitAndParents(this.repo, refHeads[1], -1, onCompUpdate)
