@@ -24,13 +24,17 @@ class CommitCompare extends Fetcher {
       // Start fetching the commit list for each branch, comparing
       // the lists each time a new commit is fetched
       let state
-      function resolvePromise() {
-        resolve && resolve(state)
+      function resolvePromise(s = state) {
+        resolve && resolve(s)
         resolve = null
       }
 
       let completeCount = 0
       const onComplete = () => {
+        if (!this.running) {
+          return resolvePromise({})
+        }
+
         completeCount++
         if (completeCount > 1) {
           // When the fetches have completed, clean up and render
@@ -62,7 +66,7 @@ class CommitCompare extends Fetcher {
         compare()
       }
 
-      if (!this.running) return
+      if (!this.running) return onComplete()
 
       this.fetches = [
         GitCommit.fetchCommitAndParents(this.repo, refHeads[0], -1, onBaseUpdate),
