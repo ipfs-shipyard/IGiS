@@ -1,0 +1,40 @@
+.CommentEditor {
+    display: inline-block;
+
+	.react-tabs__tab-list {
+		margin-bottom: 0;
+	}
+
+	textarea, .preview {
+	    display: block;
+	    width: 50em;
+		height: 15em;
+	    border: 1px solid #ddd;
+	    border-top: none;
+	    border-radius: 0.2em;
+	    border-top-left-radius: 0;
+	    border-top-right-radius: 0;
+	    padding: 1em;
+	    font: inherit;
+	    color: inherit;
+	    letter-spacing: inherit;
+	}
+	textarea {
+	    outline: none;
+		resize: none;
+		padding-top: 2em;
+	}
+	textarea::placeholder {
+		opacity: 0.5;
+	}
+	.preview {
+		overflow: auto;
+	}
+
+	.button-container {
+	    width: 50em;
+	    text-align: right;
+	    margin-top: 1em;
+	    padding: 0.5em 0;
+	}
+}

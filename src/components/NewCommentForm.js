@@ -1,9 +1,8 @@
 import Avatar from './Avatar'
 import Button from './Button'
-import CommentMarkdown from './CommentMarkdown'
+import CommentEditor from './CommentEditor'
 import React, { Component } from 'react'
 import { RepoCrdt } from '../lib/crdt/CRDT'
-import { Tab, Tabs, TabList, TabPanel } from 'react-tabs'
 
 class NewCommentForm extends Component {
   constructor() {
@@ -12,6 +11,7 @@ class NewCommentForm extends Component {
       value: ''
     }
   }
+
   render() {
     if (!this.props.author) return null
 
@@ -19,24 +19,7 @@ class NewCommentForm extends Component {
       <div className="NewCommentForm">
         <Avatar user={this.props.author} />
         <div className="comment-area">
-          <Tabs>
-            <TabList>
-              <Tab>Comment</Tab>
-              <Tab>Preview</Tab>
-            </TabList>
-
-            <TabPanel>
-              <textarea
-               onChange={ e => this.setState({ value: e.target.value}) }
-               placeholder="Leave a comment"
-               value={this.state.value} />
-            </TabPanel>
-            <TabPanel>
-              <div className="preview">
-                <CommentMarkdown source={this.state.value} />
-              </div>
-            </TabPanel>
-          </Tabs>
+          <CommentEditor value={this.state.value} onChange={ value => this.setState({ value }) } />
           <div className="button-container">
             <Button isLink={true} onClick={this.handleSubmit.bind(this)}>Comment</Button>
           </div>
