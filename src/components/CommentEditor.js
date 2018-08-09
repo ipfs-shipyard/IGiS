@@ -3,10 +3,6 @@ import React, { Component } from 'react'
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs'
 
 class CommentEditor extends Component {
-  constructor() {
-    super()
-  }
-
   render() {
     return (
       <div className="CommentEditor">
