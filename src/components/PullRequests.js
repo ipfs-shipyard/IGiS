@@ -28,7 +28,7 @@ class PullRequests extends IGComponent {
     this.triggerPromises([
       [() => GitRepo.fetch(url.repoCid), url.repoCid, 'repo'],
       [() => this.fetchPullRequests(url.repoCid, url.offsetCid), false, 'prs'],
-      [() => this.fetchPullRequestAuthors(url.repoCid, url.offsetCid), false, 'prs']
+      [() => this.fetchPullRequestAuthors(url.repoCid, url.offsetCid), false]
     ])
   }
 
@@ -49,12 +49,13 @@ class PullRequests extends IGComponent {
       byAuthor[authorCid] = byAuthor[authorCid] || pr
     })
 
-    // TODO: Render authors as they are loaded, rather than waiting till they're all loaded
     await Promise.all(Object.keys(byAuthor).map(async authorCid => {
       const prsWithAuthor = prs.filter(pr => pr.authorCid.toBaseEncodedString() === authorCid)
-      await Promise.all(prsWithAuthor.map(pr => pr.fetchAuthor()))
+      const fetchAuthors = Promise.all(prsWithAuthor.map(pr => pr.fetchAuthor()))
+
+      // Render each author as it is loaded
+      this.runThen(fetchAuthors, () => this.setState({ prs }))
     }))
-    return prs
   }
 
   pathDidChange(pathname) {

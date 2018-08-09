@@ -48,18 +48,7 @@ class PromiseMonitor {
       const onComplete = val => {
         if (!this.running) return
 
-        // If a callback was provided
-        if (cb) {
-          // If the callback is a string, just call setState() on
-          // the component with that string as the variable name
-          if (typeof cb === 'string') {
-            this.component.setState({[cb]: val})
-          } else {
-            // Otherwise call the callback
-            cb(val)
-          }
-        }
-
+        this.applyCallback(val, cb)
         return next(i + 1, val)
       }
 
@@ -95,6 +84,28 @@ class PromiseMonitor {
     }
     return next(0)
   }
+
+  // Run a promise then call a callback
+  runThen(promise, callback) {
+    if (!promise) return
+
+    return promise.then(res => this.applyCallback(res, callback))
+  }
+
+  applyCallback(val, cb) {
+    if (!this.running || !cb) return
+
+    // If the callback is a string, just call setState() on
+    // the component with that string as the variable name
+    if (typeof cb === 'string') {
+      this.component.setState({[cb]: val})
+      return val
+    }
+
+    // Otherwise call the callback
+    cb(val)
+    return val
+  }
 }
 
 //
@@ -124,6 +135,15 @@ class IGComponent extends Component {
     this.runningPromises && this.runningPromises.cancel()
     this.runningPromises = new PromiseMonitor(this, promises, (this.runningPromises || {}).cache)
     this.runningPromises.run()
+  }
+
+  // Run a promise then call a callback, if the component has not been
+  // unloaded
+  runThen(promise, callback) {
+    if (this.runningPromises) {
+      return this.runningPromises.runThen(promise, callback)
+    }
+    return promise
   }
 
   componentWillUnmount() {
