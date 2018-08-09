@@ -108,7 +108,6 @@ class OrbitDBManager extends EventEmitter {
   constructor() {
     super()
     this.orbitdb = new OrbitDB(window.ipfs)
-    console.log(this.orbitdb)
     this.dbs = {}
     this.listening = {}
   }
@@ -122,13 +121,14 @@ class OrbitDBManager extends EventEmitter {
     if (this.listening[dbName]) return
 
     this.listening[dbName] = true
-
+console.log('register listener for', dbName)
     const db = await this.getDB(dbName)
     await db.load()
 
     // Trigger event when change comes from local or remote peer
     function onTriggered () {
-      fetchFn().then(cb)
+      const p = fetchFn()
+      p && p.then && p.then(cb)
     }
     db.events.on('write', onTriggered)
     db.events.on('replicated', onTriggered)
@@ -215,7 +215,8 @@ export class RepoCrdt {
 
     if (!comment) return
 
-    return this.newComment(prCid, comment)
+    await this.newComment(prCid, comment)
+    return PullRequest.fetch(prCid)
   }
 
   async newComment(prCid, text) {
@@ -237,9 +238,15 @@ export class RepoCrdt {
   }
 
   fetchPRList(offsetCid, limit) {
-    const fetch = new PRListFetcher(this.getPRListDBName(), offsetCid, limit)
+    const dbName = this.getPRListDBName()
+    const fetch = new PRListFetcher(dbName, offsetCid, limit)
     fetch.start()
     return fetch
+  }
+
+  onPRListChange(cb) {
+    const dbName = this.getPRListDBName()
+    getOrbitManager().onChange(dbName, cb)
   }
 
   async fetchPRComments(prCid) {
@@ -271,10 +278,6 @@ export class RepoCrdt {
   async onPRCommentsChange(prCid, cb) {
     const dbName = this.getPRCommentsDBName()
     getOrbitManager().onChange(dbName, () => this.fetchPRComments(prCid), cb)
-  }
-
-  getPRCommentsEventName(prCid) {
-    return `event-repo-${this.repoCid}-pull-${prCid}-comments`
   }
 
   static fetchIpfsLinks(rows) {
