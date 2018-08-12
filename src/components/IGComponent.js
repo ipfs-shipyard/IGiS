@@ -52,28 +52,31 @@ class PromiseMonitor {
   async run() {
     this.running = true
     const collected = Array.isArray(this.promises) ? [] : {}
-    const res = await this.fetchNextLevel(this.promises, undefined, collected, this.cache)
+    const res = await this.fetchNextLevel(this.promises, undefined, collected, collected, this.cache)
     this.running = false
     return res
   }
 
   // Work out what kind of level we are processing. A level could be an array, a map
   // or a promise entry (fn, key, cb)
-  fetchNextLevel(level, prevVal, collected, cache, cacheIndex) {
+  fetchNextLevel(level, prevVal, collected, collectLevel, cache, cacheIndex) {
     if (!level || !this.running) return
 
     // It's a promise entry
-    if (Array.isArray(level) && typeof level[0] === 'function') {
+    const isArray = Array.isArray(level)
+    if (isArray && typeof level[0] === 'function') {
       return this.resolvePromiseEntry(level, prevVal, collected, cache, cacheIndex)
     }
 
     // Otherwise it's an array or object
     if (cacheIndex) {
-      cache[cacheIndex] = cache[cacheIndex] || (Array.isArray(level) ? [] : {})
+      cache[cacheIndex] = cache[cacheIndex] || (isArray ? [] : {})
       cache = cache[cacheIndex]
+      collectLevel[cacheIndex] = collectLevel[cacheIndex] || (isArray ? [] : {})
+      collectLevel = collectLevel[cacheIndex]
     }
 
-    return this.fetchLevel(level, prevVal, collected, cache, cacheIndex)
+    return this.fetchLevel(level, prevVal, collected, collectLevel, cache, cacheIndex)
   }
 
   // Fetch a level. It could be an array or a map
@@ -94,7 +97,7 @@ class PromiseMonitor {
   //     ]
   //   }
   // ]
-  async fetchLevel(promises, prevVal, collected, cache, cacheIndex) {
+  async fetchLevel(promises, prevVal, collected, collectLevel, cache, cacheIndex) {
     if (!promises || !this.running) return
 
     if (Array.isArray(promises)) {
@@ -103,19 +106,21 @@ class PromiseMonitor {
       for (const [i, p] of Object.entries(promises)) {
         if (!this.running) return res
 
-        const r = await this.fetchNextLevel(p, res[i - 1], collected, cache, i)
+        const r = await this.fetchNextLevel(p, res[i - 1], collected, collectLevel, cache, i)
+        collectLevel[i] = r
         res.push(r)
       }
-      collected[cacheIndex] = res
       return res
     }
 
     // It's an object, call entries in parallel
     const res = {}
     await Promise.all(Object.entries(promises).map(([k, p]) => {
-      return this.fetchNextLevel(p, prevVal, collected, cache, k).then(val => res[k] = val)
+      return this.fetchNextLevel(p, prevVal, collected, collectLevel, cache, k).then(val => res[k] = val)
     }))
-    collected[cacheIndex] = res
+    for (const [k, v] of Object.entries(res)) {
+      collectLevel[k] = v
+    }
     return res
   }
 
