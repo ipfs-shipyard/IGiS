@@ -2,9 +2,10 @@ import { Component } from 'react'
 import Fetcher from '../lib/Fetcher'
 
 // Keeps track of a group of promises that should
-// be run in series. Each promise has an associated key
-// so that the group can be compared to another promise
-// group to determine if the results will be the same.
+// be run in series or in parallel. Each promise has an
+// associated key for caching and so that the group
+// can be compared to another promise group to determine
+// if the results will be the same.
 class PromiseMonitor {
   constructor(component, promises, cache) {
     this.component = component
