@@ -3,15 +3,16 @@ import CommentList from './CommentList'
 import CommitList from './CommitList'
 import CommitDiffList from './CommitDiffList'
 import GitRepo from '../lib/git/GitRepo'
+import IGComponent from './IGComponent'
 import NewCommentForm from './NewCommentForm'
-import React, { Component } from 'react'
+import React from 'react'
 import Ref from '../lib/git/util/Ref'
 import { RepoCrdt, PullRequest as PullRequestCrdt, User as UserCrdt } from '../lib/crdt/CRDT'
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs'
 import Url from '../lib/Url'
 import Username from './Username'
 
-class PullRequest extends Component {
+class PullRequest extends IGComponent {
   constructor(props) {
     super(props)
     this.state = {
@@ -25,29 +26,68 @@ class PullRequest extends Component {
   }
 
   componentDidMount() {
-    this.triggerFetch()
-  }
+    super.componentDidMount()
 
-  async triggerFetch() {
+    // new RepoCrdt(this.repoCid).onPRListChange(() => {
+    //   const pathname = this.props.location.pathname
+    //   const url = Url.parsePullRequestsPath(pathname)
+    //   // if (url.offsetCid) return // Don't re-render if we're on a different page
+
+    //   this.triggerFetches(url)
+    // })
     new RepoCrdt(this.repoCid).onPRCommentsChange(this.prCid, comments => {
-      this.setState({ comments }, () => this.fetchCommentAuthors())
+      this.triggerFetches()
+      // this.setState({ comments }, () => this.fetchCommentAuthors())
     })
 
-    await Promise.all([
-      this.fetchLoggedInUser(),
-      this.fetchRepo(this.repoCid),
-      this.fetchPullRequest()
+    this.triggerFetches()
+  }
+
+  triggerFetches() {
+    const prCacheKey = this.repoCid + '-' + this.prCid
+    this.triggerPromises([
+      {
+        // parallel
+        'user': [() => UserCrdt.loggedInUser(), 'loggedInUser', 'loggedInUser'],
+        'repo': [() => GitRepo.fetch(this.repoCid), this.repoCid, 'repo'],
+        'pr': [
+          // sequential
+          [() => PullRequestCrdt.fetch(this.prCid), this.prCid, 'pr'],
+          [pr => pr.fetchAuthor().then(() => pr), this.prCid, pr => this.setState({ pr })]
+        ]
+      },
+      {
+        // parallel
+        'comments': [
+          // sequential
+          [() => new RepoCrdt(this.repoCid).fetchPRComments(this.prCid), prCacheKey, 'comments'],
+          [comments => this.fetchCommentAuthors(comments), prCacheKey]
+        ],
+        'commits': [
+          // sequential
+          [(_, collected) => collected[0].repo.fetchCommitComparison(this.getBranches()), this.prCacheKey, this.setState.bind(this)],
+          [comp => comp.commits[0] && comp.commits[0].fetchDiff(null, this.state.intersectCommit), this.prCacheKey, 'changes']
+        ]
+      }
     ])
-    await Promise.all([
-      (async () => {
-        await this.fetchComments()
-        await this.fetchCommentAuthors()
-      })(),
-      (async () => {
-        await this.fetchCommits()
-        await this.fetchDiff()
-      })()
-    ])
+  }
+
+  async fetchCommentAuthors(comments) {
+    // Multiple comments will have the same author,
+    // and users are cached, so split the comments up
+    // by author, and then render the authors of all
+    // those comments at once
+    const byAuthor = {}
+    comments.forEach(c => {
+      const authorCid = c.authorCid.toBaseEncodedString()
+      byAuthor[authorCid] = byAuthor[authorCid] || c
+    })
+
+    return Promise.all(Object.keys(byAuthor).map(async authorCid => {
+      const commentsWithAuthor = comments.filter(c => c.authorCid.toBaseEncodedString() === authorCid)
+      const fetchAuthors = Promise.all(commentsWithAuthor.map(c => c.fetchAuthor()))
+      this.runThen(fetchAuthors, () => this.setState({ comments }))
+    }))
   }
 
   getBranches() {
@@ -57,6 +97,7 @@ class PullRequest extends Component {
   }
 
   render() {
+    // console.log('render', this.state)
     const branches = this.getBranches()
     const cannotCompare = this.state.commitsFetchComplete && !this.state.commits.length
     const prefix = cannotCompare ? 'Cannot compare' : 'Comparing'
@@ -101,62 +142,6 @@ class PullRequest extends Component {
         </Tabs>
       </div>
     )
-  }
-
-  async fetchLoggedInUser() {
-    const loggedInUser = await UserCrdt.loggedInUser()
-    this.setState({ loggedInUser })
-  }
-
-  async fetchRepo(repoCid) {
-    const repo = await GitRepo.fetch(repoCid)
-    this.setState({ repo })
-  }
-
-  async fetchPullRequest() {
-    const pr = await PullRequestCrdt.fetch(this.prCid)
-    this.setState({ pr })
-
-    await pr.fetchAuthor()
-    this.setState({ pr })
-  }
-
-  async fetchComments() {
-    const comments = await new RepoCrdt(this.repoCid).fetchPRComments(this.prCid)
-    this.setState({ comments })
-  }
-
-  async fetchCommentAuthors() {
-    // Multiple comments will have the same author,
-    // and users are cached, so split the comments up
-    // by author, and then render the authors of all
-    // those comments at once
-    const comments = this.state.comments
-    const byAuthor = {}
-    comments.forEach(c => {
-      const authorCid = c.authorCid.toBaseEncodedString()
-      byAuthor[authorCid] = byAuthor[authorCid] || c
-    })
-
-    return Promise.all(Object.keys(byAuthor).map(async authorCid => {
-      const commentsWithAuthor = comments.filter(c => c.authorCid.toBaseEncodedString() === authorCid)
-      await Promise.all(commentsWithAuthor.map(c => c.fetchAuthor()))
-      this.setState({ comments: this.state.comments })
-    }))
-  }
-
-  async fetchCommits() {
-    return this.state.repo.fetchCommitComparison(this.getBranches(), this.setState.bind(this))
-  }
-
-  async fetchDiff() {
-    // Wait till all changes have been fetched then render the results
-    // (rather than rendering them as they come in, which causes the page
-    // to jump around)
-    if (!this.state.commits[0]) return
-
-    const changes = await this.state.commits[0].fetchDiff(null, this.state.intersectCommit)
-    this.setState({ changes })
   }
 }
 

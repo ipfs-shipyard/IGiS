@@ -9,7 +9,7 @@ class CommitCompare extends Fetcher {
     this.onUpdate = onUpdate
   }
 
-  onCancel() {
+  cancelFetches() {
     this.fetches && this.fetches.forEach(f => f.cancel())
   }
 
@@ -23,24 +23,24 @@ class CommitCompare extends Fetcher {
     return new Promise((resolve, reject) => {
       // Start fetching the commit list for each branch, comparing
       // the lists each time a new commit is fetched
-      let state
-      function resolvePromise(s = state) {
-        resolve && resolve(s)
+      function resolvePromise(state = {}) {
+        resolve && resolve(state)
         resolve = null
       }
 
       let completeCount = 0
       const onComplete = () => {
         if (!this.running) {
-          return resolvePromise({})
+          return resolvePromise()
         }
 
         completeCount++
         if (completeCount > 1) {
           // When the fetches have completed, clean up and render
-          this.onCancel()
-          this.onUpdate({ commitsFetchComplete: true })
-          resolvePromise()
+          this.cancelFetches()
+          const completeState = { commitsFetchComplete: true }
+          this.onUpdate && this.onUpdate(completeState)
+          resolvePromise(completeState)
         }
       }
 
@@ -49,11 +49,11 @@ class CommitCompare extends Fetcher {
       const compare = () => {
         let state = CommitCompare.compareRefCommits(baseCommits, compCommits)
         if (state.commitsFetchComplete) {
-          this.onCancel()
+          this.cancelFetches()
         }
-        this.onUpdate(state)
+        this.onUpdate && this.onUpdate(state)
         if (state.commitsFetchComplete) {
-          resolvePromise()
+          resolvePromise(state)
         }
       }
 

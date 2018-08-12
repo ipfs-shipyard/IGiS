@@ -15,6 +15,6 @@ export default class Fetcher {
     this.onCancel && this.onCancel()
   }
   then(fn) {
-    this.promise.then(fn)
+    return this.promise.then(fn)
   }
 }

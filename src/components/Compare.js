@@ -11,8 +11,7 @@ class Compare extends IGComponent {
   constructor(props) {
     super(props)
     this.state = {
-      commitsFetchComplete: false,
-      commits: []
+      commitsFetchComplete: false
     }
 
     const pathname = this.props.location.pathname
@@ -24,7 +23,7 @@ class Compare extends IGComponent {
   componentDidMount() {
     this.triggerPromises([
       [() => GitRepo.fetch(this.repoCid), false, 'repo'],
-      [repo => this.fetchCommits(repo, this.branches), false],
+      [repo => this.fetchCommits(repo, this.branches), false, this.setState.bind(this)],
       [() => this.fetchDiff(), false, 'changes']
     ])
   }
@@ -53,7 +52,7 @@ class Compare extends IGComponent {
   }
 
   fetchCommits(repo) {
-    return repo.fetchCommitComparison(this.branches, this.setState.bind(this))
+    return repo.fetchCommitComparison(this.branches)
   }
 
   async fetchDiff() {

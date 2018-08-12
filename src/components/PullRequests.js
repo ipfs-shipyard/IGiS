@@ -28,7 +28,7 @@ class PullRequests extends IGComponent {
     this.triggerPromises([
       [() => GitRepo.fetch(url.repoCid), url.repoCid, 'repo'],
       [() => this.fetchPullRequests(url.repoCid, url.offsetCid), false, 'prs'],
-      [() => this.fetchPullRequestAuthors(url.repoCid, url.offsetCid), false]
+      [prs => this.fetchPullRequestAuthors(prs, url.repoCid, url.offsetCid)]
     ])
   }
 
@@ -37,12 +37,11 @@ class PullRequests extends IGComponent {
     return new RepoCrdt(repoCid).fetchPRList(offsetCid, this.rowCount + 1)
   }
 
-  async fetchPullRequestAuthors(repoCid, offsetCid) {
+  async fetchPullRequestAuthors(prs, repoCid, offsetCid) {
     // Multiple prs will have the same author,
     // and users are cached, so split the prs up
     // by author, and then render the authors of all
     // those prs at once
-    const prs = this.state.prs
     const byAuthor = {}
     prs.forEach(pr => {
       const authorCid = pr.authorCid.toBaseEncodedString()
