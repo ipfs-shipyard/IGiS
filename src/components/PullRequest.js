@@ -27,19 +27,7 @@ class PullRequest extends IGComponent {
 
   componentDidMount() {
     super.componentDidMount()
-
-    // new RepoCrdt(this.repoCid).onPRListChange(() => {
-    //   const pathname = this.props.location.pathname
-    //   const url = Url.parsePullRequestsPath(pathname)
-    //   // if (url.offsetCid) return // Don't re-render if we're on a different page
-
-    //   this.triggerFetches(url)
-    // })
-    new RepoCrdt(this.repoCid).onPRCommentsChange(this.prCid, comments => {
-      this.triggerFetches()
-      // this.setState({ comments }, () => this.fetchCommentAuthors())
-    })
-
+    new RepoCrdt(this.repoCid).onPRCommentsChange(this.prCid, () => this.triggerFetches())
     this.triggerFetches()
   }
 
@@ -60,13 +48,13 @@ class PullRequest extends IGComponent {
         // parallel
         'comments': [
           // sequential
-          [() => new RepoCrdt(this.repoCid).fetchPRComments(this.prCid), prCacheKey, 'comments'],
-          [comments => this.fetchCommentAuthors(comments), prCacheKey]
+          [() => new RepoCrdt(this.repoCid).fetchPRComments(this.prCid), false, 'comments'],
+          [comments => this.fetchCommentAuthors(comments), false]
         ],
         'commits': [
           // sequential
-          [(_, collected) => collected[0].repo.fetchCommitComparison(this.getBranches()), this.prCacheKey, this.setState.bind(this)],
-          [comp => comp.commits[0] && comp.commits[0].fetchDiff(null, this.state.intersectCommit), this.prCacheKey, 'changes']
+          [(_, collected) => collected[0].repo.fetchCommitComparison(this.getBranches()), prCacheKey, this.setState.bind(this)],
+          [comp => comp.commits[0] && comp.commits[0].fetchDiff(null, this.state.intersectCommit), prCacheKey, 'changes']
         ]
       }
     ])
