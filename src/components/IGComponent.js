@@ -53,7 +53,6 @@ class PromiseMonitor {
     this.running = true
     const collected = Array.isArray(this.promises) ? [] : {}
     const res = await this.fetchNextLevel(this.promises, undefined, collected, collected, this.cache)
-    this.running = false
     return res
   }
 
@@ -176,7 +175,7 @@ class PromiseMonitor {
   // Run a promise then call a callback (doesn't call callback if
   // promise monitor has been cancelled)
   runThen(promise, callback) {
-    if (!promise) return
+    if (!promise || !this.running) return
 
     if (promise instanceof Promise || promise instanceof Fetcher) {
       return promise.then(res => this.applyCallback(res, callback))
