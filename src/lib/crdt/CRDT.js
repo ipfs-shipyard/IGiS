@@ -208,11 +208,11 @@ export class RepoCrdt {
       base,
       compare
     }
-    const prCid = await window.ipfs.dag.put(pr, { format: 'dag-cbor' })
+    const prCid = (await window.ipfs.dag.put(pr, { format: 'dag-cbor' })).toBaseEncodedString()
     const dbName = this.getPRListDBName()
     const db = await getOrbitManager().getDB(dbName)
     await db.load()
-    await db.add({ '/': prCid.toBaseEncodedString() })
+    await db.add({ '/': prCid })
 
     if (!comment) return
 
@@ -232,7 +232,7 @@ export class RepoCrdt {
       text
     }
     const commentCid = await window.ipfs.dag.put(commentObj, { format: 'dag-cbor' })
-    const dbName = this.getPRCommentsDBName()
+    const dbName = this.getPRCommentsDBName(prCid)
     const db = await getOrbitManager().getDB(dbName)
     await db.load()
     await db.add({ '/': commentCid.toBaseEncodedString() })
@@ -251,7 +251,7 @@ export class RepoCrdt {
   }
 
   async fetchPRComments(prCid) {
-    const dbName = this.getPRCommentsDBName()
+    const dbName = this.getPRCommentsDBName(prCid)
     const db = await getOrbitManager().getDB(dbName)
     await db.load()
 
@@ -277,7 +277,7 @@ export class RepoCrdt {
   }
 
   async onPRCommentsChange(prCid, cb) {
-    const dbName = this.getPRCommentsDBName()
+    const dbName = this.getPRCommentsDBName(prCid)
     getOrbitManager().onChange(dbName, cb)
   }
 

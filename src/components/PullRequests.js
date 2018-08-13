@@ -15,7 +15,8 @@ class PullRequests extends IGComponent {
   componentDidMount() {
     super.componentDidMount()
 
-    new RepoCrdt(this.repoCid).onPRListChange(() => {
+    const repoCid = Url.parsePullRequestsPath(this.props.location.pathname).repoCid
+    new RepoCrdt(repoCid).onPRListChange(() => {
       const pathname = this.props.location.pathname
       const url = Url.parsePullRequestsPath(pathname)
       // if (url.offsetCid) return // Don't re-render if we're on a different page
