@@ -51,8 +51,9 @@ class RepoLinks extends LoadingComponent {
           </span>
         )}
         <BreadCrumb repo={this.props.repo} branch={this.props.branch} crumbs={crumbs} />
-        <div className="commits">
-          <Link to={`/repo/${this.props.repo.cid}/commits/${encodeURIComponent(this.props.branch)}`}>Commits</Link>
+        <div className="links">
+          <Link to={Url.toPullRequests(this.props.repo.cid)}>Pull Requests</Link>
+          <Link to={Url.toCommitsPath(this.props.repo.cid, this.props.branch)}>Commits</Link>
           <Async promise={this.props.repo.refCommit(this.props.branch)} then={ commit =>
             <ZipButton repo={this.props.repo} cid={(commit || {}).cid} />
           } />

@@ -32,6 +32,10 @@ class Url {
     }
   }
 
+  static toCommitsPath(repoCid, branch) {
+    return `/repo/${repoCid}/commits/${encodeURIComponent(branch)}`
+  }
+
   static parseCommitsPath(url) {
     // /repo/<cid>/commits/<branch>/<commit cid>
     const parts = url.split('/')
@@ -91,6 +95,10 @@ class Url {
       repoCid: parts[2],
       prCid: parts[4]
     }
+  }
+
+  static toPullRequests(repoCid) {
+    return `/repo/${repoCid}/pulls`
   }
 
   static parsePullRequestsPath(url) {
