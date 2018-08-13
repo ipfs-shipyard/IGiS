@@ -105,21 +105,20 @@ class PromiseMonitor {
       for (const [i, p] of Object.entries(promises)) {
         if (!this.running) return res
 
-        const r = await this.fetchNextLevel(p, res[i - 1], collected, collectLevel, cache, i)
-        collectLevel[i] = r
-        res.push(r)
+        const val = await this.fetchNextLevel(p, res[i - 1], collected, collectLevel, cache, i)
+        collectLevel[i] = val
+        res.push(val)
       }
       return res
     }
 
     // It's an object, call entries in parallel
     const res = {}
-    await Promise.all(Object.entries(promises).map(([k, p]) => {
-      return this.fetchNextLevel(p, prevVal, collected, collectLevel, cache, k).then(val => res[k] = val)
+    await Promise.all(Object.entries(promises).map(async ([k, p]) => {
+      const val = await this.fetchNextLevel(p, prevVal, collected, collectLevel, cache, k)
+      collectLevel[k] = val
+      res[k] = val
     }))
-    for (const [k, v] of Object.entries(res)) {
-      collectLevel[k] = v
-    }
     return res
   }
 
@@ -130,7 +129,7 @@ class PromiseMonitor {
     const cacheable = !!key
     if (cacheable && (cache[cacheIndex] || {}).key === key && (cache[cacheIndex] || {}).complete) {
       // Found the result in the cache, move on to the next promise
-      return this.applyCallback(cache[cacheIndex].value, cb)
+      return cache[cacheIndex].value
     }
 
     // If cache is a sequence, invalidate this and any subsequent
