@@ -159,10 +159,11 @@ class PRListFetcher extends Fetcher {
     if (!this.running) return
 
     let events = await db.iterator({ limit: -1 }).collect()
-    if (!events.length) {
-      await storeMockPRListData(db)
-      events = await db.iterator({ limit: -1 }).collect()
-    }
+
+    // if (!events.length) {
+    //   await storeMockPRListData(db)
+    //   events = await db.iterator({ limit: -1 }).collect()
+    // }
     if (!this.running) return
 
     const i = events.findIndex(e => e.payload.value['/'] === this.offsetCid)
@@ -181,17 +182,17 @@ export class RepoCrdt {
   }
 
   getPRCommentsDBName(prCid) {
+    const dbName = 'test-' + this.repoCid + '-pr-' + prCid
     // TODO: Throws 'non-base58 character'
     // https://github.com/orbitdb/orbit-db/issues/419
-    // const dbName = this.repoCid + '-pull-' + prCid
-    return 'orbit-db.igis.comments-test-7'
+    return dbName.replace(/Qm/g, '')
   }
 
   getPRListDBName() {
+    const dbName = 'test-' + this.repoCid + '-prs'
     // TODO: Throws 'non-base58 character'
     // https://github.com/orbitdb/orbit-db/issues/419
-    // const dbName = this.repoCid + '-pulls'
-    return 'orbit-db.igis.pulls-test-7'
+    return dbName.replace(/Qm/g, '')
   }
 
   async newPR(base, compare, name, comment) {
@@ -255,10 +256,10 @@ export class RepoCrdt {
     await db.load()
 
     let events = await db.iterator({ limit: -1 }).collect()
-    if (!events.length) {
-      await storeMockPRCommentsData(db)
-      events = await db.iterator({ limit: -1 }).collect()
-    }
+    // if (!events.length) {
+    //   await storeMockPRCommentsData(db)
+    //   events = await db.iterator({ limit: -1 }).collect()
+    // }
 
     events = await RepoCrdt.fetchIpfsLinks(events)
     const merged = events.filter(e => !e.updateRef).map(e => [e])
@@ -277,7 +278,7 @@ export class RepoCrdt {
 
   async onPRCommentsChange(prCid, cb) {
     const dbName = this.getPRCommentsDBName()
-    getOrbitManager().onChange(dbName, () => this.fetchPRComments(prCid), cb)
+    getOrbitManager().onChange(dbName, cb)
   }
 
   static fetchIpfsLinks(rows) {
