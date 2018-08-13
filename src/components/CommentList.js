@@ -24,6 +24,8 @@ class CommentList extends LoadingComponent {
   }
 
   renderComments(comments) {
+    if (!comments.length) return <p className="no-comments">There are no comments yet</p>
+
     return comments.map((c, i) => <Comment key={c ? c.cid.toBaseEncodedString() : i} comment={c} />)
   }
 

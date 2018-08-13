@@ -1,4 +1,9 @@
 .PullRequestList {
+    .no-prs {
+        padding: 0.5em;
+        opacity: 0.5;
+        font-style: italic;
+    }
     .more-link {
         padding: 0.5em;
         text-align: center;

@@ -29,6 +29,8 @@ class PullRequestList extends Component {
   }
 
   renderPullRequests(prs) {
+    if (!prs.length) return <p className="no-prs">There are no Pull Requests yet</p>
+
     return prs.map(pr =>
       <PullRequestListItem key={pr.cid.toBaseEncodedString()} repoCid={this.props.repoCid} pr={pr} />
     )
