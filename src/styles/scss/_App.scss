@@ -11,6 +11,18 @@
         text-decoration: none;
     }
 
+    input, textarea {
+        border-radius: 0.2em;
+        border: 1px solid #ddd;
+        padding: 0.5em;
+        color: inherit;
+        font: inherit;
+        letter-spacing: inherit;
+    }
+    input::placeholder, textarea::placeholder {
+        opacity: 0.5;
+    }
+
     header {
         background: #f4f5f6;
         border-bottom: 1px solid #d1d1d1;

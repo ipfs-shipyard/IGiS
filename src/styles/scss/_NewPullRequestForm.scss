@@ -2,16 +2,9 @@
     padding: 0 0.5em 1em 0.5em;
 
 	input {
-	    display: block;
-	    width: 50em;
-	    border-radius: 0.2em;
-	    border: 1px solid #ddd;
-	    padding: 0.5em;
+        display: block;
+        width: 50em;
 	    margin-bottom: 1em;
-	    font: inherit;
-	}
-	input::placeholder {
-		opacity: 0.5;
 	}
 	.CommentEditor {
 		margin-bottom: 1em;

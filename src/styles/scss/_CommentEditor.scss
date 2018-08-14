@@ -6,17 +6,15 @@
 	}
 
 	textarea, .preview {
+        border: 1px solid #ddd;
+        border-radius: 0.2em;
+        padding: 1em;
 	    display: block;
 	    width: 50em;
 		height: 15em;
-	    border: 1px solid #ddd;
 	    border-top: none;
-	    border-radius: 0.2em;
 	    border-top-left-radius: 0;
 	    border-top-right-radius: 0;
-	    padding: 1em;
-	    font: inherit;
-	    color: inherit;
 	    letter-spacing: inherit;
 	}
 	textarea {
