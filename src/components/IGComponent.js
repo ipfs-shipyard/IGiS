@@ -52,8 +52,7 @@ class PromiseMonitor {
   async run() {
     this.running = true
     const collected = Array.isArray(this.promises) ? [] : {}
-    const res = await this.fetchNextLevel(this.promises, undefined, collected, collected, this.cache)
-    return res
+    return this.fetchNextLevel(this.promises, undefined, collected, collected, this.cache)
   }
 
   // Work out what kind of level we are processing. A level could be an array, a map
@@ -157,7 +156,7 @@ class PromiseMonitor {
         delete this.executing[executionId]
 
         if (this.running) {
-          this.applyCallback(val, cb)
+          this.component.applyCallback(val, cb)
 
           if (cacheable && this.running) {
             cache[cacheIndex].value = val
@@ -169,32 +168,6 @@ class PromiseMonitor {
       })
     }
     return res
-  }
-
-  // Run a promise then call a callback (doesn't call callback if
-  // promise monitor has been cancelled)
-  runThen(promise, callback) {
-    if (!promise || !this.running) return
-
-    if (promise instanceof Promise || promise instanceof Fetcher) {
-      return promise.then(res => this.applyCallback(res, callback))
-    }
-    return this.applyCallback(promise, callback)
-  }
-
-  applyCallback(val, cb) {
-    if (!cb) return
-
-    // If the callback is a string, just call setState() on
-    // the component with that string as the variable name
-    if (typeof cb === 'string') {
-      this.component.setState({[cb]: val})
-      return val
-    }
-
-    // Otherwise call the callback
-    cb(val)
-    return val
   }
 }
 
@@ -259,17 +232,36 @@ class IGComponent extends Component {
   // Run a promise then call a callback, if the component has not been
   // unmounted
   runThen(promise, callback) {
-    if (this.runningPromises) {
-      return this.runningPromises.runThen(promise, callback)
+    if (!promise || !this.mounted) return promise
+
+    if (promise instanceof Promise || promise instanceof Fetcher) {
+      return promise.then(res => this.applyCallback(res, callback))
     }
-    return promise
+    return this.applyCallback(promise, callback)
+  }
+
+  applyCallback(val, cb) {
+    if (!cb) return
+
+    // If the callback is a string, just call setState() on
+    // the component with that string as the variable name
+    if (typeof cb === 'string') {
+      this.setState({[cb]: val})
+      return val
+    }
+
+    // Otherwise call the callback
+    cb(val)
+    return val
   }
 
   componentWillUnmount() {
+    this.mounted = false
     this.runningPromises && this.runningPromises.cancel()
   }
 
   componentDidMount() {
+    this.mounted = true
     this.handlePathChange()
   }
 
