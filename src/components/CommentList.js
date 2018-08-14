@@ -1,8 +1,8 @@
-import React from 'react'
+import React, { Component } from 'react'
 import Comment from './Comment'
 import LoadingComponent from './LoadingComponent'
 
-class CommentList extends LoadingComponent {
+class CommentList extends Component {
   isDataReady(props, state) {
     return !!props.comments
   }
@@ -15,10 +15,17 @@ class CommentList extends LoadingComponent {
     )
   }
 
-  renderContent() {
+  render() {
+    if (this.props.comments) {
+      return this.renderContent(this.props.comments)
+    }
+    return this.renderLoading()
+  }
+
+  renderContent(comments) {
     return (
       <this.Element>
-        {this.renderComments(this.props.comments)}
+        {this.renderComments(comments)}
       </this.Element>
     )
   }

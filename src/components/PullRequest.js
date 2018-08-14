@@ -61,6 +61,8 @@ class PullRequest extends IGComponent {
   }
 
   async fetchCommentAuthors(comments) {
+    if (!comments) return
+
     // Multiple comments will have the same author,
     // and users are cached, so split the comments up
     // by author, and then render the authors of all
@@ -85,7 +87,6 @@ class PullRequest extends IGComponent {
   }
 
   render() {
-    // console.log('render', this.state)
     const branches = this.getBranches()
     const cannotCompare = this.state.commitsFetchComplete && !this.state.commits.length
     const prefix = cannotCompare ? 'Cannot compare' : 'Comparing'
