@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import { User } from '../lib/crdt/CRDT'
 
 class Avatar extends Component {
   Element(props) {
@@ -17,7 +18,7 @@ class Avatar extends Component {
   }
 
   renderContent() {
-    return <this.Element imageUrl={this.props.user.getAvatar()} />
+    return <this.Element imageUrl={User.getAvatarFromParams(this.props.user.avatar, this.props.user.username)} />
   }
 
   renderLoading() {

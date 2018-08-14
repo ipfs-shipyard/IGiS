@@ -4,6 +4,7 @@ import OrbitDB from 'orbit-db'
 import CID from 'cids'
 import Fetcher from '../Fetcher'
 import EventEmitter from 'events'
+import Auth from '../Auth'
 
 async function storeMockUserData() {
   const user1 = {
@@ -121,7 +122,6 @@ class OrbitDBManager extends EventEmitter {
     if (this.listening[dbName]) return
 
     this.listening[dbName] = true
-console.log('register listener for', dbName)
     const db = await this.getDB(dbName)
     await db.load()
 
@@ -200,7 +200,7 @@ export class RepoCrdt {
       throw new Error('The Pull Request must have a title')
     }
 
-    const author = await User.loggedInUser()
+    const author = await Auth.getUser()
     const pr = {
       createdAt: new Date(),
       author: { '/': author.cid.toBaseEncodedString() },
@@ -225,7 +225,7 @@ export class RepoCrdt {
       throw new Error('The comment cannot be blank')
     }
 
-    const author = await User.loggedInUser()
+    const author = await Auth.getUser()
     const commentObj = {
       createdAt: new Date(),
       author: { '/': author.cid.toBaseEncodedString() },
@@ -343,37 +343,49 @@ export class User {
     this.avatar = avatar
   }
 
-  getAvatar() {
-    if (this.avatar) return this.avatar
+  static async create({ username, name, avatar }) {
+    if (!username) throw new Error('Username is required')
 
-    const hash = md5(this.username)
+    const obj = { username }
+    if (name) obj.name = name
+    if (avatar) obj.avatar = avatar
+
+    const cid = await window.ipfs.dag.put(obj, { format: 'dag-cbor' })
+    return new User(cid, obj.username, obj.name, obj.avatar)
+  }
+
+  getAvatar() {
+    return User.getAvatarFromParams(this.avatar, this.username)
+  }
+
+  static getAvatarFromParams(avatar, username) {
+    if (avatar) return avatar
+    if (!username) return undefined
+
+    const hash = md5(username)
     return `https://www.gravatar.com/avatar/${hash}?d=identicon`
   }
 
   static async fetch(cid) {
-    cid = new CID(cid) // make sure it's a CID (not a string)
-    let user = User.cacheGet(cid)
-    if (user) return (await user)
+    if (!cid) return undefined
 
-    user = new Promise(async a => {
+    cid = new CID(cid) // make sure it's a CID (not a string)
+    let userPromise = User.cacheGet(cid)
+    if (userPromise) return (await userPromise)
+
+    userPromise = new Promise(async a => {
       const res = await window.ipfs.dag.get(cid)
       const val = res.value
       a(new User(cid, val.username, val.name, val.avatar))
     })
-    User.cacheSet(cid, user)
-    return (await user)
-  }
-
-  // TODO
-  static async loggedInUser() {
-    const [,cid] = await storeMockUserData()
-    return User.fetch(cid)
+    User.cacheSet(cid, userPromise)
+    return (await userPromise)
   }
 
   // TODO: LRU
-  static cacheSet(cid, user) {
+  static cacheSet(cid, userPromise) {
     User.cache = User.cache || {}
-    User.cache[cid.toBaseEncodedString()] = user
+    User.cache[cid.toBaseEncodedString()] = userPromise
   }
   static cacheGet(cid) {
     return ((User.cache || {})[cid.toBaseEncodedString()])

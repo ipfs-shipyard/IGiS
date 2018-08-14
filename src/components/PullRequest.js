@@ -1,4 +1,5 @@
 import Avatar from './Avatar'
+import AuthRequired from './AuthRequired'
 import CommentList from './CommentList'
 import CommitList from './CommitList'
 import CommitDiffList from './CommitDiffList'
@@ -7,7 +8,7 @@ import IGComponent from './IGComponent'
 import NewCommentForm from './NewCommentForm'
 import React from 'react'
 import Ref from '../lib/git/util/Ref'
-import { RepoCrdt, PullRequest as PullRequestCrdt, User as UserCrdt } from '../lib/crdt/CRDT'
+import { RepoCrdt, PullRequest as PullRequestCrdt } from '../lib/crdt/CRDT'
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs'
 import Url from '../lib/Url'
 import Username from './Username'
@@ -36,7 +37,6 @@ class PullRequest extends IGComponent {
     this.triggerPromises([
       {
         // parallel
-        'user': [() => UserCrdt.loggedInUser(), 'loggedInUser', 'loggedInUser'],
         'repo': [() => GitRepo.fetch(this.repoCid), this.repoCid, 'repo'],
         'pr': [
           // sequential
@@ -119,7 +119,9 @@ class PullRequest extends IGComponent {
           <TabPanel>
             <CommentList comments={this.state.comments} />
             { !!this.state.comments && (
-              <NewCommentForm author={this.state.loggedInUser} repoCid={this.repoCid} prCid={this.prCid} />
+              <AuthRequired loginCTA="Login to Comment">
+                <NewCommentForm repoCid={this.repoCid} prCid={this.prCid} />
+              </AuthRequired>
             )}
           </TabPanel>
           <TabPanel>

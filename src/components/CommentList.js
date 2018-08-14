@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 import Comment from './Comment'
-import LoadingComponent from './LoadingComponent'
 
 class CommentList extends Component {
   isDataReady(props, state) {
