@@ -1,4 +1,4 @@
-import GitRepo from './git/GitRepo'
+import Ref from './git/util/Ref'
 
 class Url {
   static async toFile(repo, tree, file) {
@@ -6,8 +6,8 @@ class Url {
     const treePathParts = tree.path.split('/')
     const treeCid = treePathParts[0]
     const path = treePathParts.slice(1).filter((p, i) => i % 2 === 1).concat([file.name]).join('/')
-    const branchPath = (Object.entries(await repo.branches).find(([b, o]) => o.cid === treeCid) || [])[0]
-    const branch = GitRepo.branchNick(branchPath)
+    const branchPath = (Object.entries(await repo.refs).find(([b, o]) => o.cid === treeCid) || [])[0]
+    const branch = Ref.refNick(branchPath)
     const type = file.isDir() ? 'tree' : 'blob'
     return `/repo/${repo.cid}/${type}/${encodeURIComponent(branch)}/${path}`
   }
@@ -30,6 +30,10 @@ class Url {
       filePath: parts.slice(5).join('/') || undefined,
       filePathParts: parts.slice(5)
     }
+  }
+
+  static toCommitsPath(repoCid, branch) {
+    return `/repo/${repoCid}/commits/${encodeURIComponent(branch)}`
   }
 
   static parseCommitsPath(url) {
@@ -56,6 +60,10 @@ class Url {
       repoCid: parts[2],
       commitCid: parts[4]
     }
+  }
+
+  static toBranchCompare(repo, base, compare) {
+    return `/repo/${repo.cid}/compare/${encodeURIComponent(base)}...${encodeURIComponent(compare)}`
   }
 
   static parseComparePath(url) {

@@ -168,7 +168,7 @@ class GitCommit {
   // Compare this commit's tree to the given commit's tree
   // If a comparison commit is not provided, compare this commit's
   // tree to its parent's tree
-  async fetchDiff(onUpdate, compCommit) {
+  fetchDiff(onUpdate, compCommit) {
     const baseTree = `${this.cid}/tree`
     let compTree
     if (compCommit) {
@@ -176,15 +176,11 @@ class GitCommit {
     } else {
       compTree = this.parents.length && `${this.cid}/parents/0/tree`
     }
-    const fetcher = new DiffFetcher(this.repo, baseTree, compTree, onUpdate)
-    fetcher.start()
-    return fetcher
+    return new DiffFetcher(this.repo, baseTree, compTree, onUpdate).start()
   }
 
   static fetchCommitAndParents(repo, cid, countRequired, onUpdate) {
-    const fetcher = new RecursiveCommitFetcher(repo, cid, countRequired, onUpdate)
-    fetcher.start()
-    return fetcher
+    return new RecursiveCommitFetcher(repo, cid, countRequired, onUpdate).start()
   }
 }
 

@@ -1,11 +1,10 @@
 import React from 'react'
-import CommitList from "./CommitList"
+import CommitList from './CommitList'
 import GitCommit from '../lib/git/GitCommit'
 import GitRepo from '../lib/git/GitRepo'
 import IGComponent from './IGComponent'
 import { Link } from 'react-router-dom'
 import Url from '../lib/Url'
-import GitTag from '../lib/git/GitTag'
 
 class Commits extends IGComponent {
   constructor(props) {
@@ -14,16 +13,21 @@ class Commits extends IGComponent {
     this.state = { commits: [] }
   }
 
-  render() {
+  pathDidChange(urlPath) {
     const pathname = this.props.location.pathname
     const url = Url.parseCommitsPath(pathname)
 
     // Fetch the repo and the commit list. Note that
     // each will update the state, triggering a new render
     this.triggerPromises([
-      [() => this.fetchRepo(url.repoCid), url.repoCid],
-      [() => this.fetchCommits(url.branch, url.commitCid), url.branch + '-' + url.commitCid, false]
+      [() => GitRepo.fetch(url.repoCid), url.repoCid, 'repo'],
+      [repo => this.fetchCommits(repo, url.branch, url.commitCid), false, 'complete']
     ])
+  }
+
+  render() {
+    const pathname = this.props.location.pathname
+    const url = Url.parseCommitsPath(pathname)
 
     // If there is another commit in the list, show the more link
     let more = null
@@ -36,63 +40,21 @@ class Commits extends IGComponent {
       <div className="Commits">
         <CommitList repoCid={url.repoCid} commits={this.state.commits.slice(0, this.rowCount)} />
         {more}
-        {this.renderLoading()}
       </div>
     )
   }
 
-  async fetchRepo(repoCid) {
-    const repo = await GitRepo.fetch(repoCid)
-    this.setState({ repo })
-  }
-
-  async fetchCommits(branch, commitCid) {
-    commitCid = commitCid || await this.branchHead(branch)
+  async fetchCommits(repo, branch, commitCid) {
+    commitCid = commitCid || (await repo.refHead(branch)).cid
     if (!commitCid) return
 
-    // If we were fetching another commit, cancel it
-    if ((this.currentCommit || {}).fetch) {
-      this.currentCommit.fetch.cancel()
-    }
-    this.currentCommit = {
-      cid: commitCid
-    }
+    // Render the loading state while we fetch the commits on this page
+    this.currentCommit = commitCid
+    this.setState({ commits: [] })
 
     // Fetch one extra row for pagination purposes
     const rowCount = this.rowCount + 1
-    this.currentCommit.fetch = GitCommit.fetchCommitAndParents(this.state.repo, commitCid, rowCount, commits => {
-      this.setState({ commits })
-    }).then(() => this.setState({ complete: commitCid }))
-  }
-
-  async branchHead(branch) {
-    let object = await this.state.repo.refCommit(branch)
-    if(object instanceof GitTag)
-      object = await object.taggedObject()
-    return object.cid
-  }
-
-  renderLoading() {
-    if (this.state.complete === (this.currentCommit || {}).cid) return null
-
-    this.loadingLengths = this.loadingLengths || [...Array(this.rowCount)].map(() => [
-      7.4, 15 + Math.random() * 10, 4 + Math.random() * 2
-    ])
-    const lengths = this.loadingLengths.slice(this.state.commits.length)
-    return (
-      <div className={ "Loading" + (this.state.commits.length ? '' : ' no-commits') }>
-        {lengths.map((item, i) => (
-          <div className="item" key={i}>
-            {item.map((l, j) => (
-              <div key={j} style={{width: l + 'em'}} />
-            ))}
-          </div>
-        ))}
-        <div className="more-link" key={lengths.length}>
-          <div />
-        </div>
-      </div>
-    )
+    return GitCommit.fetchCommitAndParents(repo, commitCid, rowCount, commits => this.setState({ commits }))
   }
 }
 

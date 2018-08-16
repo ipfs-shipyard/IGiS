@@ -1,25 +1,14 @@
 .Compare {
-    p {
+    > p {
         padding: 0.5em;
+        width: 50em;
+        display: inline-block;
+    }
+    .Button.pull-request {
+        margin: 1.5em 0.5em 0 0;
+    	float: right;
     }
     .CommitDiffList {
     	margin-top: 1em;
-    }
-    .CommitListLoading {
-        .item {
-		    padding: 0.5em 0.5em 0 0.5em;
-        }
-
-        .item > div {
-            background-color: #eee;
-            height: 1.2em;
-            display: inline-block;
-        }
-        .item > div:first-child {
-            margin-right: 2em;
-        }
-        .item > div:last-child {
-            float: right;
-        }
     }
 }

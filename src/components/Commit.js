@@ -1,43 +1,36 @@
-import React, { Component } from 'react'
-import CommitDiffList from "./CommitDiffList"
-import CommitTitle from "./CommitTitle"
+import React from 'react'
+import CommitDiffList from './CommitDiffList'
+import CommitTitle from './CommitTitle'
+import IGComponent from './IGComponent'
 import Url from '../lib/Url'
 import GitRepo from '../lib/git/GitRepo'
 
-class Commits extends Component {
+class Commits extends IGComponent {
   constructor(props) {
     super(props)
     this.state = {}
+
+    const pathname = this.props.location.pathname
+    const url = Url.parseCommitPath(pathname)
+    this.repoCid = url.repoCid
+    this.commitCid = url.commitCid
+  }
+
+  componentDidMount() {
+    this.triggerPromises([
+      [() => GitRepo.fetch(this.repoCid), false, 'repo'],
+      [repo => repo.getObject(this.commitCid), false, 'commit'],
+      [commit => commit.fetchDiff(), false, 'changes']
+    ])
   }
 
   render() {
-    const pathname = this.props.location.pathname
-
-    // If we have not yet fetched the data for the commit, continue with
-    // rendering but trigger a fetch in the background (which will
-    // call render again on completion)
-    this.triggerFetch(pathname)
-
     return (
       <div className="Commit">
         <CommitTitle commit={this.state.commit} />
         <CommitDiffList changes={this.state.changes} />
       </div>
     )
-  }
-
-  async triggerFetch(pathname) {
-    if (this.initialized) return
-    this.initialized = true
-
-    const url = Url.parseCommitPath(pathname)
-
-    const repo = await GitRepo.fetch(this.props.match.params.repoCid)
-    const commit = await repo.getObject(url.commitCid)
-    this.setState({ commit })
-
-    const changes = await commit.fetchDiff()
-    this.setState({ changes })
   }
 }
 
