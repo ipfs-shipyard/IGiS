@@ -1,12 +1,17 @@
 .RepoLinks {
     padding: 0.5em;
 
-    .commits {
+    .compare-selector {
+        padding-left: 1em;
+    }
+    .links {
     	display: inline-block;
     	float: right;
-    }
-    .ZipButton {
-        margin: 0 0.5rem 0 0;
+        margin-top: 0.5em;
+
+        a {
+            margin-right: 1rem;
+        }
     }
 
     .Loading {

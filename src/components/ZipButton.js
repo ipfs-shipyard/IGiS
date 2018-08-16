@@ -1,3 +1,4 @@
+import Button from './Button'
 import React, { Component } from 'react'
 import JSZip from 'jszip'
 import GitTree from "../lib/git/GitTree";
@@ -29,7 +30,7 @@ class ZipButton extends Component {
   }
 
   async populateTree(zipDir, path, name) {
-    this.setState({processing: true, current: path})
+    this.setState({processing: true, current: (path || '').split('/').slice(1).join('/')})
     let data = await this.props.repo.getObject(path)
     if (data instanceof GitBlob) {
       zipDir.file(name, data.content, {base64: true});
@@ -50,13 +51,12 @@ class ZipButton extends Component {
     if (!this.props.cid) return null
     
     return (
-      <span className="ZipButton">
-        { this.state.processing ? (
-          <span>Zip: processing {this.state.current}</span>
-        ) : (
-          <a href='#' onClick={this.handleClick}>Download Zip</a>
+      <Button className="ZipButton" isLink={true} onClick={this.handleClick}>
+        Download Zip
+        {this.state.processing && (
+          <div className="processing">Zip: {this.state.current}</div>
         )}
-      </span>
+      </Button>
     )
   }
 }
