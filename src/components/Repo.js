@@ -1,13 +1,13 @@
-import CommitTitle from "./CommitTitle"
-import FileContent from "./FileContent"
+import CommitTitle from './CommitTitle'
+import FileContent from './FileContent'
 import GitRepo from '../lib/git/GitRepo'
-import GitTag from '../lib/git/GitTag'
 import GitTree from '../lib/git/GitTree'
 import IGComponent from './IGComponent'
 import React from 'react'
-import Readme from "./Readme"
-import RepoLinks from "./RepoLinks"
-import Tree from "./Tree"
+import Readme from './Readme'
+import Ref from '../lib/git/util/Ref'
+import RepoLinks from './RepoLinks'
+import Tree from './Tree'
 import Url from '../lib/Url'
 
 class Repo extends IGComponent {
@@ -25,10 +25,10 @@ class Repo extends IGComponent {
     // render
     const url = Url.parseRepoPath(urlPath)
     this.triggerPromises([
-      [() => this.fetchRepo(url.repoCid), url.repoCid],
-      [() => this.fetchBranchHead(url.branch), url.branch],
-      [commit => this.fetchPath(this.urlPath, commit), urlPath],
-      [() => this.fetchReadme(), urlPath]
+      [() => GitRepo.fetch(url.repoCid), url.repoCid, 'repo'],
+      [repo => repo.refHead(url.branch), url.branch, 'commit'],
+      [commit => this.fetchPath(this.urlPath, commit), urlPath, 'data'],
+      [data => this.fetchReadme(data), urlPath, 'readme']
     ])
   }
 
@@ -48,7 +48,7 @@ class Repo extends IGComponent {
       )
     }
 
-    const defaultBranch = url.branch || GitRepo.branchNick((this.state.repo || {}).defaultBranch)
+    const defaultBranch = url.branch || Ref.refNick((this.state.repo || {}).defaultBranch)
     return (
       <div className="Repo">
         <RepoLinks repo={this.state.repo} url={url} branch={defaultBranch} />
@@ -58,41 +58,24 @@ class Repo extends IGComponent {
     )
   }
 
-  async fetchRepo(repoCid) {
-    const repo = await GitRepo.fetch(repoCid)
-    this.setState({ repo })
-  }
-
-  async fetchBranchHead(branch) {
-    let object = await this.state.repo.refCommit(branch)
-    if(object instanceof GitTag) {
-      object = await object.taggedObject()
-    }
-    this.setState({ commit: object })
-    return object
-  }
-
   async fetchPath(pathname, commit) {
     const url = Url.parseRepoPath(pathname)
     let dagPath = `${commit.cid}/tree`
     if (url.filePathParts.length) {
       dagPath += '/' + url.filePathParts.join('/hash/') + '/hash'
     }
-    const data = await this.state.repo.getObject(dagPath)
-    this.setState({ data })
+    return this.state.repo.getObject(dagPath)
   }
 
   // If there's a README.md file in the tree,
   // fetch its contents and render
-  async fetchReadme() {
-    const tree = this.state.data
+  async fetchReadme(tree) {
     if (!tree || !(tree instanceof GitTree)) return
 
     const readme = tree.files.find(f => f.name === 'README.md')
     if (!readme) return
 
-    const blob = await readme.fetchContents()
-    this.setState({ readme: blob })
+    return readme.fetchContents()
   }
 }
 

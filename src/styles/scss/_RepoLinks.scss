@@ -4,13 +4,14 @@
     .compare-selector {
         padding-left: 1em;
     }
-    .commits {
+    .links {
     	display: inline-block;
     	float: right;
         margin-top: 0.5em;
-    }
-    .ZipButton {
-        margin: 0 0 0 0.5rem;
+
+        a {
+            margin-right: 1rem;
+        }
     }
 
     .Loading {

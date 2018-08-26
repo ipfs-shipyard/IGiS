@@ -1,30 +1,42 @@
 import CID from 'cids'
-import { DAGNode } from 'ipld-dag-pb'
+import CommitCompare from './util/CommitCompare'
 import GitCommit from './GitCommit'
 import GitTag from './GitTag'
 import GitBlob from './GitBlob'
 import GitTree from './GitTree'
+import Ref from './util/Ref'
 
 const DEFAULT_HEAD_REF = 'refs/heads/master'
-const MAX_REFS_DEPTH = 10
 
 //TODO: cleanup
 class GitRepo {
   constructor(cid, headObj, defaultBranch) {
     this.cid = cid
     this.defaultBranch = defaultBranch
-
-    this.branches = this.getBranchHeads(headObj)
+    // Note: this is a Promise
+    this.refs = Ref.getRefHeads(headObj)
   }
 
-  async refCommit(branch) {
-    const branches = await this.branches
-    const [ref] = ['heads', 'tags'].filter(b => branches['refs/' + b +'/' + branch])
-    const branchPath = ref ? 'refs/' + ref + '/' + branch : this.defaultBranch
-    return branches[branchPath]
+  async refHead(refNick) {
+    let object = await this.refCommit(refNick)
+    if(object instanceof GitTag)
+      object = await object.taggedObject()
+    return object
+  }
+
+  async refCommit(refNick) {
+    const refs = await this.refs
+    return Ref.refCommit(refs, this.defaultBranch, refNick)
+  }
+
+  fetchCommitComparison(refNicks, onUpdate) {
+    return new CommitCompare(this, refNicks, onUpdate).start()
   }
 
   async getObject(path) {
+    // Simulate network fetch
+    // await new Promise(a => setTimeout(a, 1000))
+
     console.debug('Fetch', path)
     const data = (await window.ipfs.dag.get(path)).value
     // If this is a Uint8Array treat it as a Git blob
@@ -48,48 +60,21 @@ class GitRepo {
     return new GitTree(this, data, path)
   }
 
-  static branchNick(branchPath) {
-    return (branchPath || '').replace('refs/heads/', '')
-      .replace('refs/tags/', '')
-  }
-
   static async fetch(cid) {
     const repo = await window.ipfs.dag.get(cid).then(r => r.value)
-
-    const defaultBranch = await this.getDefaultBranch(repo)
-
+    const defaultBranch = await GitRepo.getDefaultBranch(repo)
     return new GitRepo(cid, repo, defaultBranch)
   }
 
-  static async getDefaultBranch(repo) {
-    const head = repo.links.find(l => l.name === 'HEAD')
+  static async getDefaultBranch(dagRepo) {
+    const head = dagRepo.links.find(l => l.name === 'HEAD')
     if (!head) return DEFAULT_HEAD_REF
 
     const headHash = new CID(head.multihash).toBaseEncodedString()
     return window.ipfs.files.cat(headHash).then(h => h.toString())
   }
 
-  async getBranchHeads(node) {
-    const branches = {}
-    await this.walkBranchDir(branches, '', node, 1)
-    return branches
-  }
-
-  walkBranchDir(branches, path, node, depth) {
-    if (depth > MAX_REFS_DEPTH) return
-
-    return Promise.all(node.links.map(async l => {
-      const cid = new CID(l.multihash).toBaseEncodedString()
-      const obj = await window.ipfs.dag.get(cid).then(r => r.value)
-      if (obj instanceof DAGNode) {
-        return this.walkBranchDir(branches, path + l.name + '/', obj, depth + 1)
-      }
-
-      branches[path + l.name] = this.wrapGitObject(obj, cid)
-    }))
-  }
-
-  wrapGitObject(obj, cid) {
+  static wrapGitObject(obj, cid) {
     if(obj instanceof Blob) {
       return new GitBlob(obj, cid)
     }

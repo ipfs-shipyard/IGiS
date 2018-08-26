@@ -1,24 +1,8 @@
 import CID from 'cids'
 import moment from 'moment'
+import Fetcher from '../Fetcher'
 
 const COMMIT_SUMMARY_LEN = 80
-
-class Fetcher {
-  start() {
-    this.running = true
-    this.promise = this.run().then(res => {
-      this.running = false
-      return res
-    })
-    return this.promise
-  }
-  cancel() {
-    this.running = false
-  }
-  then(fn) {
-    this.promise.then(fn)
-  }
-}
 
 class RecursiveCommitFetcher extends Fetcher {
   // Set countRequired to -1 to fetch the entire history
@@ -184,7 +168,7 @@ class GitCommit {
   // Compare this commit's tree to the given commit's tree
   // If a comparison commit is not provided, compare this commit's
   // tree to its parent's tree
-  async fetchDiff(onUpdate, compCommit) {
+  fetchDiff(onUpdate, compCommit) {
     const baseTree = `${this.cid}/tree`
     let compTree
     if (compCommit) {
@@ -192,15 +176,11 @@ class GitCommit {
     } else {
       compTree = this.parents.length && `${this.cid}/parents/0/tree`
     }
-    const fetcher = new DiffFetcher(this.repo, baseTree, compTree, onUpdate)
-    fetcher.start()
-    return fetcher
+    return new DiffFetcher(this.repo, baseTree, compTree, onUpdate).start()
   }
 
   static fetchCommitAndParents(repo, cid, countRequired, onUpdate) {
-    const fetcher = new RecursiveCommitFetcher(repo, cid, countRequired, onUpdate)
-    fetcher.start()
-    return fetcher
+    return new RecursiveCommitFetcher(repo, cid, countRequired, onUpdate).start()
   }
 }
 
