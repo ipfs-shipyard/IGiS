@@ -1,144 +1,120 @@
 import md5 from 'md5'
 import moment from 'moment'
 import OrbitDB from 'orbit-db'
+import PeerStar from 'peer-star-app'
 import CID from 'cids'
 import Fetcher from '../Fetcher'
-import EventEmitter from 'events'
 import Auth from '../Auth'
 
-async function storeMockUserData() {
-  const user1 = {
-    username: 'dirkmc'
-  }
-  const user2 = {
-    username: 'magik6k',
-    name: 'Łukasz Magiera',
-    avatar: 'https://avatars2.githubusercontent.com/u/3867941'
-  }
-  const user1Cid = (await window.ipfs.dag.put(user1, { format: 'dag-cbor' })).toBaseEncodedString()
-  const user2Cid = (await window.ipfs.dag.put(user2, { format: 'dag-cbor' })).toBaseEncodedString()
-  return [user1Cid, user2Cid]
-}
-
-async function storeMockPRListData(db) {
-  const [user1Cid, user2Cid] = await storeMockUserData()
-  const prs = [{
-    author: { '/': user2Cid },
-    name: 'Example PR to test out rendering',
-    base: {
-      repo: 'QmU1HJJDFSM8JJq4r31wSLfj51oysQCswz7aL78UWZHuMC',
-      ref: 'refs/heads/master'
-    },
-    compare: {
-      repo: 'QmU1HJJDFSM8JJq4r31wSLfj51oysQCswz7aL78UWZHuMC',
-      ref: 'refs/heads/feat/coreapi/swarm'
-    },
-    createdAt: new Date("2016-05-24T14:45:53.292Z")
-  }, {
-    author: { '/': user1Cid },
-    name: 'Another example PR',
-    base: {
-      repo: 'QmU1HJJDFSM8JJq4r31wSLfj51oysQCswz7aL78UWZHuMC',
-      ref: 'refs/heads/master'
-    },
-    compare: {
-      repo: 'QmU1HJJDFSM8JJq4r31wSLfj51oysQCswz7aL78UWZHuMC',
-      ref: 'refs/heads/feat/coreapi/swarm'
-    },
-    createdAt: new Date("2017-07-24T14:45:53.292Z")
-  }, {
-    author: { '/': user2Cid },
-    name: 'A third example PR',
-    base: {
-      repo: 'QmU1HJJDFSM8JJq4r31wSLfj51oysQCswz7aL78UWZHuMC',
-      ref: 'refs/heads/master'
-    },
-    compare: {
-      repo: 'QmU1HJJDFSM8JJq4r31wSLfj51oysQCswz7aL78UWZHuMC',
-      ref: 'refs/heads/feat/coreapi/swarm'
-    },
-    createdAt: new Date("2018-07-24T14:45:53.292Z")
-  }, {
-    author: { '/': user1Cid },
-    name: 'One more example PR',
-    base: {
-      repo: 'QmU1HJJDFSM8JJq4r31wSLfj51oysQCswz7aL78UWZHuMC',
-      ref: 'refs/heads/master'
-    },
-    compare: {
-      repo: 'QmU1HJJDFSM8JJq4r31wSLfj51oysQCswz7aL78UWZHuMC',
-      ref: 'refs/heads/feat/coreapi/swarm'
-    },
-    createdAt: new Date("2018-07-25T14:45:53.292Z")
-  }, {
-    author: { '/': user1Cid },
-    name: 'Another PR example here at the end of the list',
-    base: {
-      repo: 'QmU1HJJDFSM8JJq4r31wSLfj51oysQCswz7aL78UWZHuMC',
-      ref: 'refs/heads/master'
-    },
-    compare: {
-      repo: 'QmU1HJJDFSM8JJq4r31wSLfj51oysQCswz7aL78UWZHuMC',
-      ref: 'refs/heads/feat/coreapi/swarm'
-    },
-    createdAt: new Date("2018-07-26T14:45:53.292Z")
-  }]
-
-  const cids = await Promise.all(prs.map(pr => window.ipfs.dag.put(pr, { format: 'dag-cbor' })))
-  for (let cid of cids) {
-    await db.add({ '/': cid.toBaseEncodedString() })
-  }
-}
-
-async function storeMockPRCommentsData(db) {
-  const [user1Cid, user2Cid] = await storeMockUserData()
-
-  async function add(c) {
-    const cid = await window.ipfs.dag.put(c, { format: 'dag-cbor' })
-    await db.add({ '/': cid.toBaseEncodedString() })
-    return cid.toBaseEncodedString()
-  }
-  const cidC0 = await add({ author: { '/': user1Cid }, text: 'This is my first issue comment', createdAt: new Date("2018-07-24T14:45:53.292Z") })
-  await add({ author: { '/': user2Cid }, text: 'Hello there, this is my reply to the first comment', createdAt: new Date("2018-07-24T15:45:53.292Z") })
-  await add({ author: { '/': user1Cid }, text: 'This is my updated first issue comment', updateRef: { '/': cidC0 }, createdAt: new Date("2018-07-24T16:45:53.292Z") })
-  await add({ author: { '/': user1Cid }, text: 'This is my second comment', createdAt: new Date("2018-07-24T17:45:53.292Z") })
-  await add({ author: { '/': user2Cid }, text: 'This is my reply to the second comment', createdAt: new Date("2018-07-24T18:45:53.292Z") })
-}
-
-class OrbitDBManager extends EventEmitter {
+class CRDTManager {
   constructor() {
-    super()
-    this.orbitdb = new OrbitDB(window.ipfs)
     this.dbs = {}
     this.listening = {}
   }
 
-  getDB(dbName) {
-    this.dbs[dbName] = this.dbs[dbName] || this.orbitdb.log(dbName, { write: ['*'] })
-    return this.dbs[dbName]
+  async getDB(dbName) {
+    this.dbs[dbName] = this.dbs[dbName] || await this.createDB(dbName)
+    return await this.dbs[dbName]
   }
 
-  async onChange(dbName, fetchFn, cb) {
+  async onChange(dbName, cb) {
     if (this.listening[dbName]) return
 
     this.listening[dbName] = true
     const db = await this.getDB(dbName)
-    await db.load()
+    this.addChangeListener(db, cb)
+  }
 
-    // Trigger event when change comes from local or remote peer
-    function onTriggered () {
-      const p = fetchFn()
-      p && p.then && p.then(cb)
-    }
-    db.events.on('write', onTriggered)
-    db.events.on('replicated', onTriggered)
+  // Override
+  createDB(dbName) {
+  }
+
+  // Override
+  rows(dbName) {
+  }
+
+  // Override
+  push(dbName, e) {
+  }
+
+  // Override
+  addChangeListener(db, cb) {
   }
 }
 
-let _orbitManager
-function getOrbitManager() {
-  _orbitManager = _orbitManager || new OrbitDBManager()
-  return _orbitManager
+class OrbitDBManager extends CRDTManager {
+  constructor() {
+    super()
+    this.orbitdb = new OrbitDB(window.ipfs)
+  }
+
+  async createDB(dbName) {
+    const db = await this.orbitdb.log(dbName, { write: ['*'] })
+    await db.load()
+    return db
+  }
+
+  async rows(dbName) {
+    const db = await this.getDB(dbName)
+    const events = db.iterator({ limit: -1 }).collect()
+    return events.map(e => e.payload.value)
+  }
+
+  async push(dbName, e) {
+    const db = await this.getDB(dbName)
+    return db.add(e)
+  }
+
+
+  async addChangeListener(db, cb) {
+    db.events.on('write', cb)
+    db.events.on('replicated', cb)
+  }
+}
+
+class PeerStarManager extends CRDTManager {
+  constructor() {
+    super()
+    this.app = PeerStar('IGiS', {
+      ipfs: {
+        swarm: [ '/dns4/ws-star.discovery.libp2p.io/tcp/443/wss/p2p-websocket-star' ]
+      }
+    })
+    this.app.on('error', (err) => {
+      console.error('error in peer-star-app:', err)
+    })
+  }
+
+  async getApp() {
+    await this.app.start()
+    return this.app
+  }
+
+  async createDB(dbName) {
+    const app = await this.getApp()
+    return app.collaborate(dbName, 'rga')
+  }
+
+  async rows(dbName) {
+    const db = await this.getDB(dbName)
+    return db.shared.value()
+  }
+
+  async push(dbName, e) {
+    const db = await this.getDB(dbName)
+    return db.shared.push(e)
+  }
+
+  async addChangeListener(db, cb) {
+    db.on('state changed', cb)
+  }
+}
+
+let _manager
+function getCRDTManager() {
+  _manager = _manager || new PeerStarManager()
+  // _manager = _manager || new OrbitDBManager()
+  return _manager
 }
 
 class PRListFetcher extends Fetcher {
@@ -154,19 +130,10 @@ class PRListFetcher extends Fetcher {
   }
 
   async fetch() {
-    const db = await getOrbitManager().getDB(this.dbName)
-    await db.load()
+    let events = await getCRDTManager().rows(this.dbName)
     if (!this.running) return
 
-    let events = await db.iterator({ limit: -1 }).collect()
-
-    // if (!events.length) {
-    //   await storeMockPRListData(db)
-    //   events = await db.iterator({ limit: -1 }).collect()
-    // }
-    if (!this.running) return
-
-    const i = events.findIndex(e => e.payload.value['/'] === this.offsetCid)
+    const i = events.findIndex(e => e['/'] === this.offsetCid)
     const offset = i >= 0 ? i : 0
     events = events.slice(offset, offset + this.limit)
     events = await RepoCrdt.fetchIpfsLinks(events)
@@ -183,14 +150,14 @@ export class RepoCrdt {
 
   getPRCommentsDBName(prCid) {
     const dbName = 'test-' + this.repoCid + '-pr-' + prCid
-    // TODO: Throws 'non-base58 character'
+    // TODO: OrbitDB throws 'non-base58 character'
     // https://github.com/orbitdb/orbit-db/issues/419
     return dbName.replace(/Qm/g, '')
   }
 
   getPRListDBName() {
     const dbName = 'test-' + this.repoCid + '-prs'
-    // TODO: Throws 'non-base58 character'
+    // TODO: OrbitDB throws 'non-base58 character'
     // https://github.com/orbitdb/orbit-db/issues/419
     return dbName.replace(/Qm/g, '')
   }
@@ -208,11 +175,9 @@ export class RepoCrdt {
       base,
       compare
     }
-    const prCid = (await window.ipfs.dag.put(pr, { format: 'dag-cbor' })).toBaseEncodedString()
+    const prCid = (await window.ipfs.dag.put(pr)).toBaseEncodedString()
     const dbName = this.getPRListDBName()
-    const db = await getOrbitManager().getDB(dbName)
-    await db.load()
-    await db.add({ '/': prCid })
+    await getCRDTManager().push(dbName, { '/': prCid })
 
     if (!comment) return
 
@@ -231,11 +196,11 @@ export class RepoCrdt {
       author: { '/': author.cid.toBaseEncodedString() },
       text
     }
-    const commentCid = await window.ipfs.dag.put(commentObj, { format: 'dag-cbor' })
+    const commentCid = await window.ipfs.dag.put(commentObj)
     const dbName = this.getPRCommentsDBName(prCid)
-    const db = await getOrbitManager().getDB(dbName)
-    await db.load()
-    await db.add({ '/': commentCid.toBaseEncodedString() })
+    console.log('Adding comment %s to CRDT', commentCid.toBaseEncodedString(), commentObj)
+    await getCRDTManager().push(dbName, { '/': commentCid.toBaseEncodedString() })
+    console.log('Added')
   }
 
   fetchPRList(offsetCid, limit) {
@@ -247,20 +212,12 @@ export class RepoCrdt {
 
   onPRListChange(cb) {
     const dbName = this.getPRListDBName()
-    getOrbitManager().onChange(dbName, cb)
+    getCRDTManager().onChange(dbName, cb)
   }
 
   async fetchPRComments(prCid) {
     const dbName = this.getPRCommentsDBName(prCid)
-    const db = await getOrbitManager().getDB(dbName)
-    await db.load()
-
-    let events = await db.iterator({ limit: -1 }).collect()
-    // if (!events.length) {
-    //   await storeMockPRCommentsData(db)
-    //   events = await db.iterator({ limit: -1 }).collect()
-    // }
-
+    let events = await getCRDTManager().rows(dbName)
     events = await RepoCrdt.fetchIpfsLinks(events)
     const merged = events.filter(e => !e.updateRef).map(e => [e])
     for (const e of events.filter(e => !!e.updateRef)) {
@@ -278,12 +235,12 @@ export class RepoCrdt {
 
   async onPRCommentsChange(prCid, cb) {
     const dbName = this.getPRCommentsDBName(prCid)
-    getOrbitManager().onChange(dbName, cb)
+    getCRDTManager().onChange(dbName, cb)
   }
 
   static fetchIpfsLinks(rows) {
     return Promise.all(rows.map(async r => {
-      const cid = r.payload.value['/']
+      const cid = r['/']
       const res = await window.ipfs.dag.get(cid).then(r => r.value)
       return Object.assign({}, res, { cid: new CID(cid) })
     }))
@@ -350,7 +307,7 @@ export class User {
     if (name) obj.name = name
     if (avatar) obj.avatar = avatar
 
-    const cid = await window.ipfs.dag.put(obj, { format: 'dag-cbor' })
+    const cid = await window.ipfs.dag.put(obj)
     return new User(cid, obj.username, obj.name, obj.avatar)
   }
 
