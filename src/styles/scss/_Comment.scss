@@ -1,0 +1,44 @@
+.Comment {
+    padding: 0.5em 0.5em 0 0.5em;
+    margin: 1em 0 1.5em 0;
+    font-size: 0.9em;
+
+    .Avatar {
+        margin-right: 1em;
+    }
+
+    .content {
+        display: inline-block;
+        vertical-align: top;
+
+        .at {
+            color: #999;
+            display: inline-block;
+            margin-left: 1em;
+
+            .Loading {
+                width: 7em;
+                background-color: #eee;
+                height: 1em;
+                vertical-align: middle;
+                display: inline-block;
+            }
+        }
+        .text {
+        	display: inline-block;
+
+            p {
+                margin: 0.5em 0;
+            }
+
+            .Loading {
+                .item {
+                    background-color: #eee;
+                    height: 1.25em;
+                    margin: 0.5em 0;
+                    vertical-align: middle;
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,12 @@
+.Username {
+    display: inline-block;
+    font-weight: 400;
+
+    .Loading {
+        width: 5em;
+        background-color: #eee;
+        height: 1em;
+        vertical-align: middle;
+        display: inline-block;
+    }
+}

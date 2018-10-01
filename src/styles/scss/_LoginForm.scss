@@ -1,0 +1,48 @@
+.LoginForm {
+    padding: 0.5em 0 1em 0;
+    font-size: 0.9em;
+
+    .title {
+    	font-size: 1.5em;
+    	padding-left: 2.75em;
+    	margin: 0.5em 0;
+    }
+    .fields {
+    	display: inline-block;
+    	margin-left: 1em;
+
+	    input {
+	    	display: block;
+	    	margin-bottom: 1em;
+	    }
+	    .error {
+		    font-size: 0.9em;
+		    font-style: italic;
+		    opacity: 0.75;
+		    margin-top: -0.5em;
+		    text-align: right;
+   	    }
+	}
+	.button-container {
+		padding: 1em 0;
+		text-align: right;
+		width: 10em;
+
+		.Button {
+			margin-left: 1em;
+		}
+	}
+}
+.LoginForm.dialog {
+	position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background-color: rgba(255,255,255,0.9);
+
+    .content {
+    	margin: 6em auto;
+    	width: 20em;
+    }
+}

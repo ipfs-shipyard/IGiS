@@ -1,0 +1,21 @@
+.NewPullRequestForm {
+    padding: 0 0.5em 1em 0.5em;
+
+	input {
+        display: block;
+        width: 50em;
+	    margin-bottom: 1em;
+	}
+	.CommentEditor {
+		margin-bottom: 1em;
+	}
+	.button-container {
+	    width: 50em;
+	    text-align: right;
+	    padding: 0.5em 0;
+
+	    .Button {
+	    	margin-left: 0.5em;
+	    }
+	}
+}

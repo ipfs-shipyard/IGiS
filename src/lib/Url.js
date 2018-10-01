@@ -80,6 +80,39 @@ class Url {
       branches: branches.map(decodeURIComponent)
     }
   }
+
+  static toPullRequest(repoCid, prCid) {
+    return `/repo/${repoCid}/pull/${prCid}`
+  }
+
+  static parsePullRequestPath(url) {
+    // /repo/<cid>/pull/<prid>
+    const parts = url.split('/')
+    if (parts[1] !== 'repo') return {}
+
+    return {
+      parts: parts,
+      repoCid: parts[2],
+      prCid: parts[4]
+    }
+  }
+
+  static toPullRequests(repoCid) {
+    return `/repo/${repoCid}/pulls`
+  }
+
+  static parsePullRequestsPath(url) {
+    // /repo/<cid>/pulls/<offsetCid>
+    const parts = url.split('/')
+    if (parts[1] !== 'repo') return {}
+
+    return {
+      parts: parts,
+      repoCid: parts[2],
+      offsetCid: parts[4],
+      basePath: parts.slice(0, 4).join('/')
+    }
+  }
 }
 
 export default Url

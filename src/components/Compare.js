@@ -1,8 +1,11 @@
+import AuthRequired from './AuthRequired'
 import React from 'react'
+import Button from './Button'
 import CommitList from './CommitList'
 import CommitDiffList from './CommitDiffList'
 import IGComponent from './IGComponent'
 import GitRepo from '../lib/git/GitRepo'
+import NewPullRequestForm from './NewPullRequestForm'
 import Url from '../lib/Url'
 
 class Compare extends IGComponent {
@@ -35,6 +38,16 @@ class Compare extends IGComponent {
           {prefix} base <b>{this.branches[0]}</b> to <b>{this.branches[1]}</b>
           {!!this.state.message && ' (' + this.state.message + ')'}
         </p>
+        { !this.state.showNewPR && !!(this.state.commits || []).length && (
+          <Button className="pull-request" isLink={true} onClick={() => this.setState({ showNewPR: true })}>
+            New Pull Request
+          </Button>
+        )}
+        { this.state.showNewPR && (
+          <AuthRequired dialog={true} onCancel={() => this.setState({ showNewPR: false })}>
+            <NewPullRequestForm repoCid={this.repoCid} branches={this.branches} onCancel={() => this.setState({ showNewPR: false })} />
+          </AuthRequired>
+        )}
         <CommitList repoCid={this.repoCid} commits={this.state.commits} />
         { !cannotCompare && <CommitDiffList changes={this.state.changes} /> }
       </div>
