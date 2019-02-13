@@ -1,4 +1,3 @@
-import CID from 'cids'
 import CommitCompare from './util/CommitCompare'
 import GitCommit from './GitCommit'
 import GitTag from './GitTag'
@@ -70,8 +69,7 @@ class GitRepo {
     const head = dagRepo.links.find(l => l.name === 'HEAD')
     if (!head) return DEFAULT_HEAD_REF
 
-    const headHash = new CID(head.multihash).toBaseEncodedString()
-    return window.ipfs.files.cat(headHash).then(h => h.toString())
+    return window.ipfs.cat(head.cid).then(h => h.toString())
   }
 
   static wrapGitObject(obj, cid) {

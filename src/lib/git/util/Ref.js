@@ -1,4 +1,3 @@
-import CID from 'cids'
 import { DAGNode } from 'ipld-dag-pb'
 import GitRepo from '../GitRepo'
 
@@ -26,13 +25,12 @@ class Ref {
     if (depth > MAX_REFS_DEPTH) return
 
     return Promise.all(node.links.map(async l => {
-      const cid = new CID(l.multihash).toBaseEncodedString()
-      const obj = await window.ipfs.dag.get(cid).then(r => r.value)
+      const obj = await window.ipfs.dag.get(l.cid).then(r => r.value)
       if (obj instanceof DAGNode) {
         return Ref.walkRefDir(refs, path + l.name + '/', obj, depth + 1)
       }
 
-      refs[path + l.name] = GitRepo.wrapGitObject(obj, cid)
+      refs[path + l.name] = GitRepo.wrapGitObject(obj, l.cid)
     }))
   }
 }

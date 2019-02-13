@@ -7,12 +7,6 @@ import './styles/css/main.css';
 
 window.ipfs = new Ipfs()
 window.ipfs.on('ready', async () => {
-  try {
-    await window.ipfs.swarm.connect("/dns4/ipfs.devtty.eu/wss/ipfs/QmVGX47BzePPqEzpkTwfUJogPZxHcifpSXsGdgyHjtk5t7")
-  } catch(e) {
-  	console.error(e)
-  }
-
   ReactDOM.render((
     <HashRouter>
       <App />
