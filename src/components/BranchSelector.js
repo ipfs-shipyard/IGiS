@@ -82,6 +82,7 @@ class BranchSelector extends Component {
         return renderType('heads')
       case 'tags':
         return renderType('tags')
+      default:
     }
   }
 
