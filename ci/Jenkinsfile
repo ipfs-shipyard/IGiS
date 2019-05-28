@@ -1,5 +1,0 @@
-website([
-  website: 'igis.io',
-  record: '_dnslink'
-])
-
