@@ -33,7 +33,7 @@
     "ipfs-css": "^0.12.0",
     "jest": "24.1.0",
     "jszip": "^3.1.5",
-    "moment": "^2.24.0",
+    "moment": "^2.29.2",
     "object-assign": "4.1.1",
     "postcss-flexbugs-fixes": "4.1.0",
     "postcss-loader": "3.0.0",
